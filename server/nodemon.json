@@ -1,0 +1,11 @@
+{
+  "watch": ["**/*.ts", "prisma/**/*"],
+  "ext": "ts,json,prisma",
+  "ignore": ["dist/**/*", "node_modules/**/*", "*.log"],
+  "exec": "ts-node -r dotenv/config index.ts dotenv_config_path=./dev.env",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": "1000",
+  "legacyWatch": true
+}
