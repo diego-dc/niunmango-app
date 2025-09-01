@@ -1,93 +1,74 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+provider = "postgresql"
+url      = "postgresql://niunmango_user:Niunmango1Psw!@db:5432/niunmango_db"
 }
 
-// User model
+// User model for Google authentication
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  posts     Post[]
-  comments  Comment[]
-  profile   Profile?
-
-  @@map("users")
+id            String     @id @default(uuid())
+googleId      String?    @unique
+email         String     @unique
+name          String?
+entries       Entry[]
+categories    Category[]
+budgets       Budget[]
 }
 
-// Profile model
-model Profile {
-  id          String  @id @default(cuid())
-  bio         String?
-  avatar      String?
-  website     String?
-  location    String?
-  userId      String  @unique
-  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// Categories for expenses/income
+model Category {
+id            String       @id @default(uuid())
+name          String
+userId        String
+user          User         @relation(fields: [userId], references: [id])
+entries       Entry[]
+budgetItems   BudgetItem[]
 
-  @@map("profiles")
+@@unique([name, userId])
 }
 
-// Post model
-model Post {
-  id          String   @id @default(cuid())
-  title       String
-  content     String
-  published   Boolean  @default(false)
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  comments   Comment[]
-  tags       Tag[]
-
-  @@map("posts")
+// Model for financial entries (expenses, income, savings)
+model Entry {
+id            String     @id @default(uuid())
+type          EntryType
+amount        Decimal
+date          DateTime   @default(now())
+description   String
+userId        String
+user          User       @relation(fields: [userId], references: [id])
+categoryId    String
+category      Category   @relation(fields: [categoryId], references: [id])
 }
 
-// Comment model
-model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  authorId  String
-  postId    String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("comments")
+// Enum for entry types
+enum EntryType {
+EXPENSE
+INCOME
+SAVINGS
 }
 
-// Tag model
-model Tag {
-  id    String @id @default(cuid())
-  name  String @unique
-  posts Post[]
-
-  @@map("tags")
+// Model for a budget for a specific period
+model Budget {
+id            String       @id @default(uuid())
+name          String
+startDate     DateTime
+endDate       DateTime
+userId        String
+user          User         @relation(fields: [userId], references: [id])
+budgetItems   BudgetItem[]
 }
 
-// Role enum
-enum Role {
-  USER
-  ADMIN
-  MODERATOR
+// Model for a budget item (budgeted amount for a specific category)
+model BudgetItem {
+id              String   @id @default(uuid())
+budgetId        String
+budget          Budget   @relation(fields: [budgetId], references: [id])
+categoryId      String
+category        Category @relation(fields: [categoryId], references: [id])
+budgetedAmount  Decimal
+
+@@unique([budgetId, categoryId])
 }
