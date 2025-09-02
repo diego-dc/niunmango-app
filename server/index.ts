@@ -33,10 +33,17 @@ app.get("/health", (_req, res) => {
   });
 });
 
+// Import routes
+import apiRoutes from "./src/routes";
+import { authMiddleware } from "./src/middleware/auth";
+
 // API routes
 app.get("/api/status", (_req, res) => {
   res.json({ message: "NiunMango API is running!" });
 });
+
+// Protected API routes
+app.use("/api", authMiddleware, apiRoutes);
 
 // Database connection test
 app.get("/api/db-test", async (_req, res) => {

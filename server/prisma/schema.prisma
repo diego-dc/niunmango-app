@@ -4,7 +4,7 @@ provider = "prisma-client-js"
 
 datasource db {
 provider = "postgresql"
-url      = "postgresql://niunmango_user:Niunmango1Psw!@db:5432/niunmango_db"
+url      = env("DATABASE_URL")
 }
 
 // User model for Google authentication
@@ -16,6 +16,7 @@ name          String?
 entries       Entry[]
 categories    Category[]
 budgets       Budget[]
+accounts      Account[]
 }
 
 // Categories for expenses/income
@@ -32,15 +33,16 @@ budgetItems   BudgetItem[]
 
 // Model for financial entries (expenses, income, savings)
 model Entry {
-id            String     @id @default(uuid())
+id            String        @id @default(uuid())
 type          EntryType
 amount        Decimal
-date          DateTime   @default(now())
+date          DateTime      @default(now())
 description   String
 userId        String
-user          User       @relation(fields: [userId], references: [id])
+user          User          @relation(fields: [userId], references: [id])
 categoryId    String
-category      Category   @relation(fields: [categoryId], references: [id])
+category      Category      @relation(fields: [categoryId], references: [id])
+entryAccounts EntryAccount[]
 }
 
 // Enum for entry types
@@ -71,4 +73,42 @@ category        Category @relation(fields: [categoryId], references: [id])
 budgetedAmount  Decimal
 
 @@unique([budgetId, categoryId])
+}
+
+// Model for different accounts/funds (savings, credit cards, cash, etc.)
+model Account {
+id          String    @id @default(uuid())
+name        String
+type        AccountType
+userId      String
+user        User      @relation(fields: [userId], references: [id])
+balance     Decimal   @default(0)
+isActive    Boolean   @default(true)
+createdAt   DateTime  @default(now())
+updatedAt   DateTime  @updatedAt
+entryAccounts EntryAccount[]
+
+@@unique([name, userId])
+}
+
+// Enum for account types
+enum AccountType {
+SAVINGS
+CHECKING
+CREDIT_CARD
+CASH
+INVESTMENT
+OTHER
+}
+
+// Junction table for entries and accounts (many-to-many relationship)
+model EntryAccount {
+id        String  @id @default(uuid())
+entryId   String
+entry     Entry   @relation(fields: [entryId], references: [id], onDelete: Cascade)
+accountId String
+account   Account @relation(fields: [accountId], references: [id])
+amount    Decimal // Amount that affects this specific account
+
+@@unique([entryId, accountId])
 }

@@ -8,6 +8,10 @@
 .env
 .vercel
 
+# Specific environment files to ignore
+server/.env
+client/.env
+
 # Build and IDE files
 /dist
 /build
