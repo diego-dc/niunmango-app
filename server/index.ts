@@ -4,6 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
+import passport from "./src/config/passport";
 
 // Load environment variables
 dotenv.config();
@@ -24,6 +25,9 @@ app.use(morgan("combined"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Initialize Passport
+app.use(passport.initialize());
+
 // Health check endpoint
 app.get("/health", (_req, res) => {
   res.json({
@@ -35,7 +39,11 @@ app.get("/health", (_req, res) => {
 
 // Import routes
 import apiRoutes from "./src/routes";
+import authRoutes from "./src/routes/auth";
 import { authMiddleware } from "./src/middleware/auth";
+
+// Auth routes (no auth middleware)
+app.use("/auth", authRoutes);
 
 // API routes
 app.get("/api/status", (_req, res) => {
@@ -86,6 +94,7 @@ async function startServer() {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/health`);
       console.log(`🔗 API status: http://localhost:${PORT}/api/status`);
+      console.log(`🔐 Auth: http://localhost:${PORT}/auth/google`);
     });
   } catch (error) {
     console.error("❌ Failed to start server:", error);

@@ -1,55 +1,97 @@
-import { Link } from "@heroui/link";
-import { Snippet } from "@heroui/snippet";
-import { Code } from "@heroui/code";
-import { button as buttonStyles } from "@heroui/theme";
+"use client";
 
-import { siteConfig } from "@/config/site";
+import { useEffect } from "react";
+import { useAuth } from "@/contexts/auth-context";
+import { useRouter } from "next/navigation";
+import { Button } from "@heroui/button";
+import { CardBody } from "@heroui/card";
+import { Card } from "@heroui/card";
 import { title, subtitle } from "@/components/primitives";
-import { GithubIcon } from "@/components/icons";
 
 export default function Home() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return null; // Will redirect to dashboard
+  }
+
   return (
-    <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
-      <div className="inline-block max-w-xl text-center justify-center">
-        <span className={title()}>Make&nbsp;</span>
-        <span className={title({ color: "violet" })}>beautiful&nbsp;</span>
-        <br />
-        <span className={title()}>
-          websites regardless of your design experience.
-        </span>
+    <section className="flex flex-col items-center justify-center gap-8 py-8 md:py-10 min-h-screen">
+      <div className="inline-block max-w-4xl text-center justify-center">
+        <div className="flex items-center justify-center mb-6">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+            <span className="text-3xl font-bold text-white">₦</span>
+          </div>
+        </div>
+
+        <span className={title({ size: "lg" })}>NiunMango</span>
         <div className={subtitle({ class: "mt-4" })}>
-          Beautiful, fast and modern React UI library.
+          Tu aplicación de finanzas personales. Gestiona tus ingresos, gastos y
+          presupuestos de manera inteligente.
         </div>
       </div>
 
-      <div className="flex gap-3">
-        <Link
-          isExternal
-          className={buttonStyles({
-            color: "primary",
-            radius: "full",
-            variant: "shadow",
-          })}
-          href={siteConfig.links.docs}
-        >
-          Documentation
-        </Link>
-        <Link
-          isExternal
-          className={buttonStyles({ variant: "bordered", radius: "full" })}
-          href={siteConfig.links.github}
-        >
-          <GithubIcon size={20} />
-          GitHub
-        </Link>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full">
+        <Card>
+          <CardBody className="text-center p-6">
+            <div className="text-3xl mb-3">💰</div>
+            <h3 className="text-lg font-semibold mb-2">Gestión de Cuentas</h3>
+            <p className="text-sm text-default-500">
+              Administra múltiples cuentas y obtén tu capital neto en tiempo
+              real.
+            </p>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardBody className="text-center p-6">
+            <div className="text-3xl mb-3">📊</div>
+            <h3 className="text-lg font-semibold mb-2">Presupuestos</h3>
+            <p className="text-sm text-default-500">
+              Crea y monitorea presupuestos por categorías para controlar tus
+              gastos.
+            </p>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardBody className="text-center p-6">
+            <div className="text-3xl mb-3">📈</div>
+            <h3 className="text-lg font-semibold mb-2">Estadísticas</h3>
+            <p className="text-sm text-default-500">
+              Visualiza tus patrones de gasto y progreso financiero.
+            </p>
+          </CardBody>
+        </Card>
       </div>
 
-      <div className="mt-8">
-        <Snippet hideCopyButton hideSymbol variant="bordered">
-          <span>
-            Get started by editing <Code color="primary">app/page.tsx</Code>
-          </span>
-        </Snippet>
+      <div className="flex flex-col sm:flex-row gap-4 mt-8">
+        <Button color="primary" size="lg" onClick={() => router.push("/login")}>
+          Comenzar Ahora
+        </Button>
+
+        <Button
+          variant="bordered"
+          size="lg"
+          onClick={() => router.push("/login")}
+        >
+          Iniciar Sesión
+        </Button>
       </div>
     </section>
   );
