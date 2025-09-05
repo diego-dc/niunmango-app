@@ -3,12 +3,10 @@ import jwt from "jsonwebtoken";
 
 declare global {
   namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        email: string;
-        name?: string;
-      };
+    interface User {
+      id: string;
+      email: string;
+      name: string | null;
     }
   }
 }
@@ -51,30 +49,4 @@ export const authMiddleware = (
     }
     return res.status(401).json({ error: "Invalid token" });
   }
-};
-
-// Optional auth middleware (doesn't fail if no token)
-export const optionalAuthMiddleware = (
-  req: Request,
-  _res: Response,
-  next: NextFunction
-) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, process.env["JWT_SECRET"]!) as any;
-      req.user = {
-        id: decoded.id,
-        email: decoded.email,
-        name: decoded.name,
-      };
-    } catch (error) {
-      // Ignore token errors for optional auth
-      // Don't set req.user if token is invalid
-    }
-  }
-
-  next();
 };

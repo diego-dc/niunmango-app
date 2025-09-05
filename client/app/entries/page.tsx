@@ -2,25 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  Card, 
-  CardHeader, 
-  CardBody, 
-  Button,
+import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Button } from "@heroui/button";
+import {
   Table,
   TableHeader,
   TableColumn,
   TableBody,
   TableRow,
   TableCell,
-  Chip,
-  Select,
-  SelectItem,
-  Input,
-  DatePicker,
-  Pagination,
-  Tooltip
-} from "@nextui-org/react";
+} from "@heroui/table";
+import { Chip } from "@heroui/chip";
+import { Select, SelectItem } from "@heroui/select";
+import { Input } from "@heroui/input";
+import { Pagination } from "@heroui/pagination";
+import { Tooltip } from "@heroui/tooltip";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 
@@ -61,7 +57,7 @@ export default function EntriesPage() {
     categoryId: "",
     startDate: "",
     endDate: "",
-    search: ""
+    search: "",
   });
 
   // Load entries
@@ -73,7 +69,7 @@ export default function EntriesPage() {
         ...(filters.type && { type: filters.type }),
         ...(filters.categoryId && { categoryId: filters.categoryId }),
         ...(filters.startDate && { startDate: filters.startDate }),
-        ...(filters.endDate && { endDate: filters.endDate })
+        ...(filters.endDate && { endDate: filters.endDate }),
       });
 
       const data = await get<EntriesResponse>(`/entries?${params}`);
@@ -94,28 +90,40 @@ export default function EntriesPage() {
 
   const getTypeColor = (type: EntryType) => {
     switch (type) {
-      case "INCOME": return "success";
-      case "EXPENSE": return "danger";
-      case "SAVINGS": return "primary";
-      default: return "default";
+      case "INCOME":
+        return "success";
+      case "EXPENSE":
+        return "danger";
+      case "SAVINGS":
+        return "primary";
+      default:
+        return "default";
     }
   };
 
   const getTypeLabel = (type: EntryType) => {
     switch (type) {
-      case "INCOME": return "Ingreso";
-      case "EXPENSE": return "Gasto";
-      case "SAVINGS": return "Ahorro";
-      default: return "";
+      case "INCOME":
+        return "Ingreso";
+      case "EXPENSE":
+        return "Gasto";
+      case "SAVINGS":
+        return "Ahorro";
+      default:
+        return "";
     }
   };
 
   const getTypeIcon = (type: EntryType) => {
     switch (type) {
-      case "INCOME": return "💰";
-      case "EXPENSE": return "💸";
-      case "SAVINGS": return "🏦";
-      default: return "";
+      case "INCOME":
+        return "💰";
+      case "EXPENSE":
+        return "💸";
+      case "SAVINGS":
+        return "🏦";
+      default:
+        return "";
     }
   };
 
@@ -125,10 +133,10 @@ export default function EntriesPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -146,14 +154,9 @@ export default function EntriesPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Historial de Entradas</h1>
-          <p className="text-default-500 mt-1">
-            {total} entradas encontradas
-          </p>
+          <p className="text-default-500 mt-1">{total} entradas encontradas</p>
         </div>
-        <Button 
-          color="primary" 
-          onPress={() => router.push("/entries/new")}
-        >
+        <Button color="primary" onPress={() => router.push("/entries/new")}>
           + Nueva Entrada
         </Button>
       </div>
@@ -169,21 +172,24 @@ export default function EntriesPage() {
               label="Tipo"
               placeholder="Todos los tipos"
               selectedKeys={filters.type ? [filters.type] : []}
-              onSelectionChange={(keys) => 
-                setFilters(prev => ({ ...prev, type: Array.from(keys)[0] as string || "" }))
+              onSelectionChange={(keys) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  type: (Array.from(keys)[0] as string) || "",
+                }))
               }
             >
-              <SelectItem key="INCOME" value="INCOME">💰 Ingresos</SelectItem>
-              <SelectItem key="EXPENSE" value="EXPENSE">💸 Gastos</SelectItem>
-              <SelectItem key="SAVINGS" value="SAVINGS">🏦 Ahorros</SelectItem>
+              <SelectItem key="INCOME">💰 Ingresos</SelectItem>
+              <SelectItem key="EXPENSE">💸 Gastos</SelectItem>
+              <SelectItem key="SAVINGS">🏦 Ahorros</SelectItem>
             </Select>
 
             <Input
               label="Fecha Desde"
               type="date"
               value={filters.startDate}
-              onValueChange={(value) => 
-                setFilters(prev => ({ ...prev, startDate: value }))
+              onValueChange={(value) =>
+                setFilters((prev) => ({ ...prev, startDate: value }))
               }
             />
 
@@ -191,15 +197,23 @@ export default function EntriesPage() {
               label="Fecha Hasta"
               type="date"
               value={filters.endDate}
-              onValueChange={(value) => 
-                setFilters(prev => ({ ...prev, endDate: value }))
+              onValueChange={(value) =>
+                setFilters((prev) => ({ ...prev, endDate: value }))
               }
             />
 
             <Button
               variant="flat"
               color="warning"
-              onPress={() => setFilters({ type: "", categoryId: "", startDate: "", endDate: "", search: "" })}
+              onPress={() =>
+                setFilters({
+                  type: "",
+                  categoryId: "",
+                  startDate: "",
+                  endDate: "",
+                  search: "",
+                })
+              }
             >
               Limpiar Filtros
             </Button>
@@ -210,7 +224,7 @@ export default function EntriesPage() {
       {/* Entries Table */}
       <Card>
         <CardBody className="p-0">
-          <Table 
+          <Table
             aria-label="Tabla de entradas"
             isHeaderSticky
             classNames={{
@@ -226,7 +240,7 @@ export default function EntriesPage() {
               <TableColumn>FECHA</TableColumn>
               <TableColumn>ACCIONES</TableColumn>
             </TableHeader>
-            <TableBody 
+            <TableBody
               items={entries}
               isLoading={loading}
               emptyContent="No se encontraron entradas"
@@ -243,19 +257,19 @@ export default function EntriesPage() {
                       {getTypeLabel(entry.type)}
                     </Chip>
                   </TableCell>
-                  
+
                   <TableCell>
                     <div>
                       <p className="font-medium">{entry.description}</p>
                     </div>
                   </TableCell>
-                  
+
                   <TableCell>
                     <Chip variant="bordered" size="sm">
                       {entry.category.name}
                     </Chip>
                   </TableCell>
-                  
+
                   <TableCell>
                     <div className="space-y-1">
                       {entry.entryAccounts.map((entryAccount, idx) => (
@@ -270,12 +284,12 @@ export default function EntriesPage() {
                       ))}
                     </div>
                   </TableCell>
-                  
+
                   <TableCell>
-                    <span 
+                    <span
                       className={`font-bold ${
-                        entry.type === "EXPENSE" 
-                          ? "text-red-600" 
+                        entry.type === "EXPENSE"
+                          ? "text-red-600"
                           : entry.type === "INCOME"
                             ? "text-green-600"
                             : "text-blue-600"
@@ -284,13 +298,13 @@ export default function EntriesPage() {
                       {formatAmount(entry.amount, entry.type)}
                     </span>
                   </TableCell>
-                  
+
                   <TableCell>
                     <span className="text-small text-default-500">
                       {formatDate(entry.date)}
                     </span>
                   </TableCell>
-                  
+
                   <TableCell>
                     <div className="flex gap-1">
                       <Button

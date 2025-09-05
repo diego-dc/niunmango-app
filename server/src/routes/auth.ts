@@ -36,8 +36,10 @@ router.get(
       { expiresIn: "7d" }
     );
 
+    console.log("Redirigiendo");
+
     // Redirect to frontend with token
-    res.redirect(`${process.env["CLIENT_URL"]}/auth/callback?token=${token}`);
+    res.redirect(`${process.env["CLIENT_URL"]}/dashboard?token=${token}`);
   }
 );
 

@@ -3,25 +3,22 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
-import { 
-  Button, 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  Avatar, 
-  Divider,
-  Progress,
-  Chip,
-  Tab,
-  Tabs,
+import { Button } from "@heroui/button";
+import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Avatar } from "@heroui/avatar";
+import { Divider } from "@heroui/divider";
+import { Progress } from "@heroui/progress";
+import { Chip } from "@heroui/chip";
+
+import {
   Table,
   TableHeader,
   TableColumn,
   TableBody,
   TableRow,
-  TableCell
-} from "@nextui-org/react";
-import { useRequireAuth } from "@/hooks/useAuth";
+  TableCell,
+} from "@heroui/table";
+import { Tab, Tabs } from "@heroui/tabs";
 import { useApi } from "@/hooks/useApi";
 
 interface Stats {
@@ -68,12 +65,13 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [statsData, accountsData, netWorthData, budgetData] = await Promise.all([
-          get<Stats>("/entries/stats"),
-          get<Account[]>("/accounts"),
-          get<{ netWorth: number }>("/accounts/net-worth"),
-          get<Budget>("/budgets/current").catch(() => null)
-        ]);
+        const [statsData, accountsData, netWorthData, budgetData] =
+          await Promise.all([
+            get<Stats>("/entries/stats"),
+            get<Account[]>("/accounts"),
+            get<{ netWorth: number }>("/accounts/net-worth"),
+            get<Budget>("/budgets/current").catch(() => null),
+          ]);
 
         setStats(statsData);
         setAccounts(accountsData);
@@ -96,23 +94,35 @@ export default function DashboardPage() {
 
   const getAccountTypeColor = (type: string) => {
     switch (type) {
-      case "SAVINGS": return "success";
-      case "CHECKING": return "primary";
-      case "CREDIT_CARD": return "warning";
-      case "CASH": return "secondary";
-      case "INVESTMENT": return "default";
-      default: return "default";
+      case "SAVINGS":
+        return "success";
+      case "CHECKING":
+        return "primary";
+      case "CREDIT_CARD":
+        return "warning";
+      case "CASH":
+        return "secondary";
+      case "INVESTMENT":
+        return "default";
+      default:
+        return "default";
     }
   };
 
   const getAccountTypeLabel = (type: string) => {
     switch (type) {
-      case "SAVINGS": return "Ahorros";
-      case "CHECKING": return "Cuenta Corriente";
-      case "CREDIT_CARD": return "Tarjeta Crédito";
-      case "CASH": return "Efectivo";
-      case "INVESTMENT": return "Inversión";
-      default: return type;
+      case "SAVINGS":
+        return "Ahorros";
+      case "CHECKING":
+        return "Cuenta Corriente";
+      case "CREDIT_CARD":
+        return "Tarjeta Crédito";
+      case "CASH":
+        return "Efectivo";
+      case "INVESTMENT":
+        return "Inversión";
+      default:
+        return type;
     }
   };
 
@@ -134,17 +144,10 @@ export default function DashboardPage() {
             Bienvenido de vuelta, {user?.name}
           </p>
         </div>
-        
+
         <div className="flex items-center gap-4">
-          <Avatar
-            name={user?.name || "Usuario"}
-            size="md"
-          />
-          <Button
-            color="danger"
-            variant="flat"
-            onClick={handleSignOut}
-          >
+          <Avatar name={user?.name || "Usuario"} size="md" />
+          <Button color="danger" variant="flat" onClick={handleSignOut}>
             Cerrar Sesión
           </Button>
         </div>
@@ -160,7 +163,9 @@ export default function DashboardPage() {
             <p className="text-2xl font-bold text-green-600">
               ${netWorth.toFixed(2)}
             </p>
-            <p className="text-small text-default-500">Total en todas las cuentas</p>
+            <p className="text-small text-default-500">
+              Total en todas las cuentas
+            </p>
           </CardBody>
         </Card>
 
@@ -197,9 +202,11 @@ export default function DashboardPage() {
             <h3 className="text-lg font-semibold">Balance del Mes</h3>
           </CardHeader>
           <CardBody className="pt-0">
-            <p className={`text-2xl font-bold ${
-              (stats?.netIncome || 0) >= 0 ? "text-green-600" : "text-red-600"
-            }`}>
+            <p
+              className={`text-2xl font-bold ${
+                (stats?.netIncome || 0) >= 0 ? "text-green-600" : "text-red-600"
+              }`}
+            >
               ${stats?.netIncome.toFixed(2) || "0.00"}
             </p>
             <p className="text-small text-default-500">Ingresos - Gastos</p>
@@ -215,38 +222,38 @@ export default function DashboardPage() {
         <Divider />
         <CardBody>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button 
-              color="success" 
+            <Button
+              color="success"
               className="h-20 flex-col"
               onPress={() => router.push("/entries/new?type=INCOME")}
             >
               <span className="text-xl mb-1">💰</span>
               <span className="text-small">Nuevo Ingreso</span>
             </Button>
-            
-            <Button 
-              color="danger" 
-              variant="flat" 
+
+            <Button
+              color="danger"
+              variant="flat"
               className="h-20 flex-col"
               onPress={() => router.push("/entries/new?type=EXPENSE")}
             >
               <span className="text-xl mb-1">💸</span>
               <span className="text-small">Nuevo Gasto</span>
             </Button>
-            
-            <Button 
-              color="primary" 
-              variant="flat" 
+
+            <Button
+              color="primary"
+              variant="flat"
               className="h-20 flex-col"
               onPress={() => router.push("/entries/new?type=SAVINGS")}
             >
               <span className="text-xl mb-1">🏦</span>
               <span className="text-small">Nuevo Ahorro</span>
             </Button>
-            
-            <Button 
-              color="secondary" 
-              variant="flat" 
+
+            <Button
+              color="secondary"
+              variant="flat"
               className="h-20 flex-col"
               onPress={() => router.push("/entries")}
             >
@@ -285,18 +292,22 @@ export default function DashboardPage() {
                         <p className="font-medium">{account.name}</p>
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          color={getAccountTypeColor(account.type)} 
-                          variant="flat" 
+                        <Chip
+                          color={getAccountTypeColor(account.type)}
+                          variant="flat"
                           size="sm"
                         >
                           {getAccountTypeLabel(account.type)}
                         </Chip>
                       </TableCell>
                       <TableCell>
-                        <span className={`font-bold ${
-                          account.balance >= 0 ? "text-green-600" : "text-red-600"
-                        }`}>
+                        <span
+                          className={`font-bold ${
+                            account.balance >= 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
                           ${account.balance.toFixed(2)}
                         </span>
                       </TableCell>
@@ -323,9 +334,12 @@ export default function DashboardPage() {
               <CardHeader>
                 <div className="flex justify-between items-center w-full">
                   <div>
-                    <h3 className="text-lg font-semibold">{currentBudget.name}</h3>
+                    <h3 className="text-lg font-semibold">
+                      {currentBudget.name}
+                    </h3>
                     <p className="text-small text-default-500">
-                      Progreso general: {currentBudget.overallPercentage.toFixed(1)}%
+                      Progreso general:{" "}
+                      {currentBudget.overallPercentage.toFixed(1)}%
                     </p>
                   </div>
                   <Button size="sm" color="primary" variant="flat">
@@ -337,14 +351,21 @@ export default function DashboardPage() {
               <CardBody>
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-small font-medium">Progreso Total</span>
+                    <span className="text-small font-medium">
+                      Progreso Total
+                    </span>
                     <span className="text-small">
-                      ${currentBudget.totalSpent.toFixed(2)} / ${currentBudget.totalBudgeted.toFixed(2)}
+                      ${currentBudget.totalSpent.toFixed(2)} / $
+                      {currentBudget.totalBudgeted.toFixed(2)}
                     </span>
                   </div>
-                  <Progress 
-                    value={currentBudget.overallPercentage} 
-                    color={currentBudget.overallPercentage > 100 ? "danger" : "primary"}
+                  <Progress
+                    value={currentBudget.overallPercentage}
+                    color={
+                      currentBudget.overallPercentage > 100
+                        ? "danger"
+                        : "primary"
+                    }
                     className="mb-4"
                   />
                 </div>
@@ -355,11 +376,12 @@ export default function DashboardPage() {
                       <div className="flex justify-between items-center mb-2">
                         <h4 className="font-medium">{item.category.name}</h4>
                         <span className="text-small">
-                          ${item.spent.toFixed(2)} / ${item.budgetedAmount.toFixed(2)}
+                          ${item.spent.toFixed(2)} / $
+                          {item.budgetedAmount.toFixed(2)}
                         </span>
                       </div>
-                      <Progress 
-                        value={item.percentage} 
+                      <Progress
+                        value={item.percentage}
                         color={item.percentage > 100 ? "danger" : "success"}
                         size="sm"
                       />
@@ -377,13 +399,13 @@ export default function DashboardPage() {
                 <div className="mb-4">
                   <span className="text-4xl">📊</span>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Sin Presupuesto Activo</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  Sin Presupuesto Activo
+                </h3>
                 <p className="text-default-500 mb-4">
                   Crea tu primer presupuesto para controlar tus gastos
                 </p>
-                <Button color="primary">
-                  Crear Presupuesto
-                </Button>
+                <Button color="primary">Crear Presupuesto</Button>
               </CardBody>
             </Card>
           )}

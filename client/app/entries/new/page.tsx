@@ -2,25 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  Card, 
-  CardHeader, 
-  CardBody, 
-  Input, 
-  Select, 
-  SelectItem, 
-  Button, 
-  Textarea,
-  Switch,
-  Divider,
-  Chip
-} from "@nextui-org/react";
+import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Input, Textarea } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
+import { Button } from "@heroui/button";
+import { Switch } from "@heroui/switch";
+import { Divider } from "@heroui/divider";
+import { Chip } from "@heroui/chip";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 
 type EntryType = "INCOME" | "EXPENSE" | "SAVINGS";
-type Category = { id: string; name: string; };
-type Account = { id: string; name: string; type: string; balance: number; };
+type Category = { id: string; name: string };
+type Account = { id: string; name: string; type: string; balance: number };
 
 interface AccountEntry {
   accountId: string;
@@ -37,7 +31,7 @@ export default function NewEntryPage() {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [accountEntries, setAccountEntries] = useState<AccountEntry[]>([]);
   const [multipleAccounts, setMultipleAccounts] = useState(false);
 
@@ -52,12 +46,12 @@ export default function NewEntryPage() {
       try {
         const [categoriesData, accountsData] = await Promise.all([
           get<Category[]>("/categories"),
-          get<Account[]>("/accounts")
+          get<Account[]>("/accounts"),
         ]);
-        
+
         setCategories(categoriesData);
         setAccounts(accountsData);
-        
+
         // Initialize with first account if available
         if (accountsData.length > 0) {
           setAccountEntries([{ accountId: accountsData[0].id, amount: 0 }]);
@@ -78,18 +72,21 @@ export default function NewEntryPage() {
   useEffect(() => {
     const numAmount = parseFloat(amount) || 0;
     if (!multipleAccounts && accountEntries.length === 1) {
-      setAccountEntries(prev => [{ ...prev[0], amount: numAmount }]);
+      setAccountEntries((prev) => [{ ...prev[0], amount: numAmount }]);
     }
   }, [amount, multipleAccounts, accountEntries.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!amount || !description || !categoryId || accountEntries.length === 0) {
       return;
     }
 
-    const totalAccountAmount = accountEntries.reduce((sum, entry) => sum + entry.amount, 0);
+    const totalAccountAmount = accountEntries.reduce(
+      (sum, entry) => sum + entry.amount,
+      0
+    );
     if (Math.abs(totalAccountAmount - parseFloat(amount)) > 0.01) {
       alert("La suma de las cuentas debe ser igual al monto total");
       return;
@@ -102,7 +99,7 @@ export default function NewEntryPage() {
         description,
         categoryId,
         date: new Date(date),
-        accountEntries
+        accountEntries,
       });
 
       router.push("/entries");
@@ -113,34 +110,51 @@ export default function NewEntryPage() {
   };
 
   const addAccount = () => {
-    setAccountEntries(prev => [...prev, { accountId: accounts[0]?.id || "", amount: 0 }]);
+    setAccountEntries((prev) => [
+      ...prev,
+      { accountId: accounts[0]?.id || "", amount: 0 },
+    ]);
   };
 
   const removeAccount = (index: number) => {
-    setAccountEntries(prev => prev.filter((_, i) => i !== index));
+    setAccountEntries((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateAccountEntry = (index: number, field: keyof AccountEntry, value: string | number) => {
-    setAccountEntries(prev => prev.map((entry, i) => 
-      i === index ? { ...entry, [field]: value } : entry
-    ));
+  const updateAccountEntry = (
+    index: number,
+    field: keyof AccountEntry,
+    value: string | number
+  ) => {
+    setAccountEntries((prev) =>
+      prev.map((entry, i) =>
+        i === index ? { ...entry, [field]: value } : entry
+      )
+    );
   };
 
   const getTypeColor = () => {
     switch (type) {
-      case "INCOME": return "success";
-      case "EXPENSE": return "danger";
-      case "SAVINGS": return "primary";
-      default: return "default";
+      case "INCOME":
+        return "success";
+      case "EXPENSE":
+        return "danger";
+      case "SAVINGS":
+        return "primary";
+      default:
+        return "default";
     }
   };
 
   const getTypeLabel = () => {
     switch (type) {
-      case "INCOME": return "Ingreso";
-      case "EXPENSE": return "Gasto";
-      case "SAVINGS": return "Ahorro";
-      default: return "";
+      case "INCOME":
+        return "Ingreso";
+      case "EXPENSE":
+        return "Gasto";
+      case "SAVINGS":
+        return "Ahorro";
+      default:
+        return "";
     }
   };
 
@@ -171,12 +185,14 @@ export default function NewEntryPage() {
               label="Tipo de Entrada"
               placeholder="Selecciona el tipo"
               selectedKeys={[type]}
-              onSelectionChange={(keys) => setType(Array.from(keys)[0] as EntryType)}
+              onSelectionChange={(keys) =>
+                setType(Array.from(keys)[0] as EntryType)
+              }
               isRequired
             >
-              <SelectItem key="EXPENSE" value="EXPENSE">💸 Gasto</SelectItem>
-              <SelectItem key="INCOME" value="INCOME">💰 Ingreso</SelectItem>
-              <SelectItem key="SAVINGS" value="SAVINGS">🏦 Ahorro</SelectItem>
+              <SelectItem key="EXPENSE">💸 Gasto</SelectItem>
+              <SelectItem key="INCOME">💰 Ingreso</SelectItem>
+              <SelectItem key="SAVINGS">🏦 Ahorro</SelectItem>
             </Select>
 
             {/* Amount and Date */}
@@ -214,13 +230,13 @@ export default function NewEntryPage() {
               label="Categoría"
               placeholder="Selecciona una categoría"
               selectedKeys={categoryId ? [categoryId] : []}
-              onSelectionChange={(keys) => setCategoryId(Array.from(keys)[0] as string)}
+              onSelectionChange={(keys) =>
+                setCategoryId(Array.from(keys)[0] as string)
+              }
               isRequired
             >
               {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
+                <SelectItem key={category.id}>{category.name}</SelectItem>
               ))}
             </Select>
 
@@ -246,13 +262,17 @@ export default function NewEntryPage() {
                     placeholder="Selecciona cuenta"
                     className="flex-1"
                     selectedKeys={entry.accountId ? [entry.accountId] : []}
-                    onSelectionChange={(keys) => 
-                      updateAccountEntry(index, "accountId", Array.from(keys)[0] as string)
+                    onSelectionChange={(keys) =>
+                      updateAccountEntry(
+                        index,
+                        "accountId",
+                        Array.from(keys)[0] as string
+                      )
                     }
                     isRequired
                   >
                     {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
+                      <SelectItem key={account.id}>
                         {account.name} (${account.balance.toFixed(2)})
                       </SelectItem>
                     ))}
@@ -267,7 +287,13 @@ export default function NewEntryPage() {
                       step="0.01"
                       className="w-32"
                       value={entry.amount.toString()}
-                      onValueChange={(value) => updateAccountEntry(index, "amount", parseFloat(value) || 0)}
+                      onValueChange={(value) =>
+                        updateAccountEntry(
+                          index,
+                          "amount",
+                          parseFloat(value) || 0
+                        )
+                      }
                       isRequired
                     />
                   )}
