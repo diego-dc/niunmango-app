@@ -18,9 +18,9 @@ export function useApi() {
       options: ApiRequestOptions = {}
     ): Promise<T> => {
       const { authenticated = true, ...fetchOptions } = options;
-      
+
       setLoading(true);
-      
+
       try {
         const headers: Record<string, string> = {
           "Content-Type": "application/json",

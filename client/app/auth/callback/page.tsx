@@ -1,28 +1,29 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { authService } from '@/lib/auth';
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { authService } from "@/lib/auth";
 
 export default function AuthCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const error = searchParams.get('error');
+    const token = searchParams.get("token");
+    const error = searchParams.get("error");
 
     if (error) {
-      console.error('Auth error:', error);
-      router.push('/login?error=auth_failed');
+      console.error("Auth error:", error);
+      router.push("/login?error=auth_failed");
       return;
     }
 
     if (token) {
+      console.log("FOUND TOKEN!");
       authService.handleAuthCallback(token);
-      router.push('/dashboard');
+      router.push("/dashboard");
     } else {
-      router.push('/login?error=no_token');
+      router.push("/login?error=no_token");
     }
   }, [searchParams, router]);
 

@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Card, CardHeader, CardBody } from "@heroui/card";
-import { Avatar } from "@heroui/avatar";
 import { Divider } from "@heroui/divider";
 import { Progress } from "@heroui/progress";
 import { Chip } from "@heroui/chip";
@@ -52,6 +51,7 @@ interface Budget {
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading, logout } = useAuth();
+  console.log("current user: ", user);
   const { get, loading } = useApi();
   const router = useRouter();
 
@@ -144,13 +144,41 @@ export default function DashboardPage() {
             Bienvenido de vuelta, {user?.name}
           </p>
         </div>
+      </div>
 
-        <div className="flex items-center gap-4">
-          <Avatar name={user?.name || "Usuario"} size="md" />
-          <Button color="danger" variant="flat" onClick={handleSignOut}>
-            Cerrar Sesión
-          </Button>
-        </div>
+      {/* Quick Actions */}
+
+      <h3 className="text-lg font-semibold">Acciones Rápidas</h3>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-5">
+        <Button
+          color="success"
+          className="h-20 flex-col"
+          onPress={() => router.push("/entries/new?type=INCOME")}
+        >
+          <span className="text-xl mb-1">💰</span>
+          <span className="text-small">Nuevo Ingreso</span>
+        </Button>
+
+        <Button
+          color="danger"
+          variant="flat"
+          className="h-20 flex-col"
+          onPress={() => router.push("/entries/new?type=EXPENSE")}
+        >
+          <span className="text-xl mb-1">💸</span>
+          <span className="text-small">Nuevo Gasto</span>
+        </Button>
+
+        <Button
+          color="secondary"
+          variant="flat"
+          className="h-20 flex-col col-span-2"
+          onPress={() => router.push("/entries")}
+        >
+          <span className="text-xl mb-1">📊</span>
+          <span className="text-small">Ver Historial</span>
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -213,56 +241,6 @@ export default function DashboardPage() {
           </CardBody>
         </Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card className="mb-8">
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Acciones Rápidas</h3>
-        </CardHeader>
-        <Divider />
-        <CardBody>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button
-              color="success"
-              className="h-20 flex-col"
-              onPress={() => router.push("/entries/new?type=INCOME")}
-            >
-              <span className="text-xl mb-1">💰</span>
-              <span className="text-small">Nuevo Ingreso</span>
-            </Button>
-
-            <Button
-              color="danger"
-              variant="flat"
-              className="h-20 flex-col"
-              onPress={() => router.push("/entries/new?type=EXPENSE")}
-            >
-              <span className="text-xl mb-1">💸</span>
-              <span className="text-small">Nuevo Gasto</span>
-            </Button>
-
-            <Button
-              color="primary"
-              variant="flat"
-              className="h-20 flex-col"
-              onPress={() => router.push("/entries/new?type=SAVINGS")}
-            >
-              <span className="text-xl mb-1">🏦</span>
-              <span className="text-small">Nuevo Ahorro</span>
-            </Button>
-
-            <Button
-              color="secondary"
-              variant="flat"
-              className="h-20 flex-col"
-              onPress={() => router.push("/entries")}
-            >
-              <span className="text-xl mb-1">📊</span>
-              <span className="text-small">Ver Historial</span>
-            </Button>
-          </div>
-        </CardBody>
-      </Card>
 
       {/* Content Tabs */}
       <Tabs aria-label="Dashboard content" variant="underlined" color="primary">

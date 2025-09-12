@@ -107,7 +107,6 @@ export const Navbar = () => {
                 <DropdownItem key="entries" as={NextLink} href="/entries">
                   Mis Entradas
                 </DropdownItem>
-                <DropdownItem key="settings">Configuración</DropdownItem>
                 <DropdownItem
                   key="logout"
                   color="danger"
@@ -126,37 +125,6 @@ export const Navbar = () => {
           </NavbarItem>
         )}
       </NavbarContent>
-
-      {/* Mobile Menu */}
-      {isAuthenticated && (
-        <>
-          <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-            <NavbarMenuToggle />
-          </NavbarContent>
-
-          <NavbarMenu>
-            <div className="mx-4 mt-2 flex flex-col gap-2">
-              {navItems.map((item) => (
-                <NavbarMenuItem key={item.href}>
-                  <Link
-                    as={NextLink}
-                    color={isActive(item.href) ? "primary" : "foreground"}
-                    href={item.href}
-                    size="lg"
-                  >
-                    {item.label}
-                  </Link>
-                </NavbarMenuItem>
-              ))}
-              <NavbarMenuItem>
-                <Link color="danger" href="#" size="lg" onPress={handleSignOut}>
-                  Cerrar Sesión
-                </Link>
-              </NavbarMenuItem>
-            </div>
-          </NavbarMenu>
-        </>
-      )}
     </HeroUINavbar>
   );
 };

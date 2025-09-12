@@ -39,7 +39,7 @@ router.get(
     console.log("Redirigiendo");
 
     // Redirect to frontend with token
-    res.redirect(`${process.env["CLIENT_URL"]}/dashboard?token=${token}`);
+    res.redirect(`${process.env["CLIENT_URL"]}/auth/callback?token=${token}`);
   }
 );
 
@@ -52,12 +52,28 @@ router.post("/logout", (_req, res) => {
 
 // Get current user info
 router.get("/me", (req, res) => {
-  // This will use the JWT middleware we'll update
-  const user = req.user;
-  if (!user) {
-    return res.status(401).json({ error: "Not authenticated" });
+  // Extract token from Authorization header
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "Access token required" });
   }
-  return res.json(user);
+
+  try {
+    // Verify JWT token
+    const decoded = jwt.verify(token, process.env["JWT_SECRET"]!) as any;
+    return res.json({
+      id: decoded.id,
+      email: decoded.email,
+      name: decoded.name,
+    });
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ error: "Token expired" });
+    }
+    return res.status(401).json({ error: "Invalid token" });
+  }
 });
 
 // Refresh token route

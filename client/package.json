@@ -32,6 +32,7 @@
     "@heroui/table": "^2.2.25",
     "@heroui/tabs": "^2.2.22",
     "@heroui/theme": "2.4.20",
+    "@heroui/toast": "^2.0.16",
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.26",
     "@react-oauth/google": "^0.12.2",

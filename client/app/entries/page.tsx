@@ -156,6 +156,9 @@ export default function EntriesPage() {
           <h1 className="text-3xl font-bold">Historial de Entradas</h1>
           <p className="text-default-500 mt-1">{total} entradas encontradas</p>
         </div>
+      </div>
+
+      <div className="flex w-full my-6">
         <Button color="primary" onPress={() => router.push("/entries/new")}>
           + Nueva Entrada
         </Button>

@@ -12,8 +12,8 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, login } = useAuth();
-  
-  const error = searchParams.get('error');
+
+  const error = searchParams.get("error");
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -26,7 +26,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col gap-3 pb-0">
           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600">
@@ -43,8 +43,8 @@ export default function LoginPage() {
         <CardBody className="pt-6">
           {error && (
             <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-md text-sm">
-              {error === 'auth_failed' && 'Error al autenticar con Google'}
-              {error === 'no_token' && 'No se recibió token de autenticación'}
+              {error === "auth_failed" && "Error al autenticar con Google"}
+              {error === "no_token" && "No se recibió token de autenticación"}
             </div>
           )}
 

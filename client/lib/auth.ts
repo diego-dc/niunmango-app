@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export interface User {
   id: string;
@@ -15,8 +15,8 @@ class AuthService {
   private token: string | null = null;
 
   constructor() {
-    if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('auth_token');
+    if (typeof window !== "undefined") {
+      this.token = localStorage.getItem("auth_token");
     }
   }
 
@@ -26,15 +26,17 @@ class AuthService {
 
   setToken(token: string): void {
     this.token = token;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token);
+    console.log("Setting token");
+    if (typeof window !== "undefined") {
+      console.log("Token set");
+      localStorage.setItem("auth_token", token);
     }
   }
 
   removeToken(): void {
     this.token = null;
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth_token");
     }
   }
 
@@ -45,14 +47,14 @@ class AuthService {
   async logout(): Promise<void> {
     try {
       await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${this.token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
         },
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
       this.removeToken();
     }
@@ -62,9 +64,10 @@ class AuthService {
     if (!this.token) return null;
 
     try {
+      console.log("Sending to auth me with token: ", this.token);
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: {
-          'Authorization': `Bearer ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
         },
       });
 
@@ -77,7 +80,7 @@ class AuthService {
 
       return await response.json();
     } catch (error) {
-      console.error('Get current user error:', error);
+      console.error("Get current user error:", error);
       return null;
     }
   }
@@ -87,9 +90,9 @@ class AuthService {
 
     try {
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ token: this.token }),
       });
@@ -100,7 +103,7 @@ class AuthService {
       this.setToken(token);
       return true;
     } catch (error) {
-      console.error('Refresh token error:', error);
+      console.error("Refresh token error:", error);
       return false;
     }
   }

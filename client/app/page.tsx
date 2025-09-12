@@ -81,10 +81,6 @@ export default function Home() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mt-8">
-        <Button color="primary" size="lg" onClick={() => router.push("/login")}>
-          Comenzar Ahora
-        </Button>
-
         <Button
           variant="bordered"
           size="lg"
