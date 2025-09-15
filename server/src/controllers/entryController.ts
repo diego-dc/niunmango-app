@@ -71,14 +71,13 @@ export const entryController = {
       if (
         !type ||
         !amount ||
-        !description ||
         !categoryId ||
         !accountEntries ||
         accountEntries.length === 0
       ) {
         return res.status(400).json({
           error:
-            "Type, amount, description, categoryId, and at least one account entry are required",
+            "Type, amount, categoryId, and at least one account entry are required",
         });
       }
 

@@ -7,6 +7,7 @@ import { Button } from "@heroui/button";
 import { CardBody } from "@heroui/card";
 import { Card } from "@heroui/card";
 import { title, subtitle } from "@/components/primitives";
+import { Logo } from "@/components/icons";
 
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -34,9 +35,7 @@ export default function Home() {
     <section className="flex flex-col items-center justify-center gap-8 py-8 md:py-10 min-h-screen">
       <div className="inline-block max-w-4xl text-center justify-center">
         <div className="flex items-center justify-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-            <span className="text-3xl font-bold text-white">₦</span>
-          </div>
+          <Logo size={48}></Logo>
         </div>
 
         <span className={title({ size: "lg" })}>NiunMango</span>

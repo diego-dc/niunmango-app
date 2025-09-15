@@ -3,15 +3,12 @@
 import {
   Navbar as HeroUINavbar,
   NavbarContent,
-  NavbarMenu,
-  NavbarMenuToggle,
   NavbarBrand,
   NavbarItem,
-  NavbarMenuItem,
 } from "@heroui/navbar";
 import { Button } from "@heroui/button";
-import { Link } from "@heroui/link";
 import { Avatar } from "@heroui/avatar";
+import { Logo } from "./icons";
 import {
   Dropdown,
   DropdownTrigger,
@@ -48,9 +45,7 @@ export const Navbar = () => {
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-2" href="/">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-              <span className="text-sm font-bold text-white">₦</span>
-            </div>
+            <Logo></Logo>
             <p className="font-bold text-inherit">NiunMango</p>
           </NextLink>
         </NavbarBrand>
@@ -106,6 +101,9 @@ export const Navbar = () => {
                 </DropdownItem>
                 <DropdownItem key="entries" as={NextLink} href="/entries">
                   Mis Entradas
+                </DropdownItem>
+                <DropdownItem key="settings" as={NextLink} href="/settings">
+                  Configuraciones
                 </DropdownItem>
                 <DropdownItem
                   key="logout"

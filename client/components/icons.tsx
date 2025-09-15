@@ -3,16 +3,16 @@ import * as React from "react";
 import { IconSvgProps } from "@/types";
 
 export const Logo: React.FC<IconSvgProps> = ({
-  size = 36,
+  size = 24,
   width,
   height,
   ...props
 }) => (
   <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
+    height={size || height}
+    width={size || width}
     viewBox="0 0 128 128"
+    {...props}
   >
     <radialGradient
       id="SVGsaLX9bzj"
@@ -21,15 +21,15 @@ export const Logo: React.FC<IconSvgProps> = ({
       r="183.963"
       gradientUnits="userSpaceOnUse"
     >
-      <stop offset=".532" stop-color="#f33a1f" />
-      <stop offset=".615" stop-color="#f86922" />
-      <stop offset=".696" stop-color="#fd9124" />
-      <stop offset=".739" stop-color="#ffa025" />
-      <stop offset=".793" stop-color="#fca025" />
-      <stop offset=".839" stop-color="#f1a124" />
-      <stop offset=".883" stop-color="#dfa222" />
-      <stop offset=".925" stop-color="#c7a41f" />
-      <stop offset=".962" stop-color="#aaa61c" />
+      <stop offset=".532" stopColor="#f33a1f" />
+      <stop offset=".615" stopColor="#f86922" />
+      <stop offset=".696" stopColor="#fd9124" />
+      <stop offset=".739" stopColor="#ffa025" />
+      <stop offset=".793" stopColor="#fca025" />
+      <stop offset=".839" stopColor="#f1a124" />
+      <stop offset=".883" stopColor="#dfa222" />
+      <stop offset=".925" stopColor="#c7a41f" />
+      <stop offset=".962" stopColor="#aaa61c" />
     </radialGradient>
     <path
       fill="url(#SVGsaLX9bzj)"
@@ -216,6 +216,111 @@ export const SearchIcon = (props: IconSvgProps) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth="2"
+    />
+  </svg>
+);
+
+export const Plus = ({ size = 24, width, height, ...props }: IconSvgProps) => (
+  <svg
+    aria-hidden="true"
+    height={size || height}
+    viewBox="0 0 24 24"
+    width={size || width}
+    {...props}
+  >
+    <path
+      fill="currentColor"
+      d="M18 10h-4V6a2 2 0 0 0-4 0l.071 4H6a2 2 0 0 0 0 4l4.071-.071L10 18a2 2 0 0 0 4 0v-4.071L18 14a2 2 0 0 0 0-4"
+    />
+  </svg>
+);
+
+export const Trash = ({ size = 24, width, height, ...props }: IconSvgProps) => (
+  <svg
+    aria-hidden="true"
+    height={size || height}
+    viewBox="0 0 24 24"
+    width={size || width}
+    {...props}
+  >
+    <path
+      fill="currentColor"
+      d="m15.241 3.721l.293 2.029H19.5a.75.75 0 0 1 0 1.5h-.769l-.873 10.185c-.053.62-.096 1.13-.165 1.542c-.07.429-.177.813-.386 1.169a3.25 3.25 0 0 1-1.401 1.287c-.372.177-.764.25-1.198.284c-.417.033-.928.033-1.55.033h-2.316c-.622 0-1.133 0-1.55-.033c-.434-.034-.826-.107-1.198-.284a3.25 3.25 0 0 1-1.401-1.287c-.21-.356-.315-.74-.386-1.169c-.069-.413-.112-.922-.165-1.542L5.269 7.25H4.5a.75.75 0 0 1 0-1.5h3.966l.293-2.029l.011-.061c.182-.79.86-1.41 1.71-1.41h3.04c.85 0 1.528.62 1.71 1.41zM9.981 5.75h4.037l-.256-1.776c-.048-.167-.17-.224-.243-.224h-3.038c-.073 0-.195.057-.243.224zm1.269 4.75a.75.75 0 0 0-1.5 0v5a.75.75 0 0 0 1.5 0zm3 0a.75.75 0 0 0-1.5 0v5a.75.75 0 0 0 1.5 0z"
+    />
+  </svg>
+);
+
+export const Settings = ({
+  size = 24,
+  width,
+  height,
+  ...props
+}: IconSvgProps) => (
+  <svg
+    aria-hidden="true"
+    height={size || height}
+    viewBox="0 0 24 24"
+    width={size || width}
+    {...props}
+  >
+    <path
+      fill="currentColor"
+      d="M10.825 22q-.675 0-1.162-.45t-.588-1.1L8.85 18.8q-.325-.125-.612-.3t-.563-.375l-1.55.65q-.625.275-1.25.05t-.975-.8l-1.175-2.05q-.35-.575-.2-1.225t.675-1.075l1.325-1Q4.5 12.5 4.5 12.337v-.675q0-.162.025-.337l-1.325-1Q2.675 9.9 2.525 9.25t.2-1.225L3.9 5.975q.35-.575.975-.8t1.25.05l1.55.65q.275-.2.575-.375t.6-.3l.225-1.65q.1-.65.588-1.1T10.825 2h2.35q.675 0 1.163.45t.587 1.1l.225 1.65q.325.125.613.3t.562.375l1.55-.65q.625-.275 1.25-.05t.975.8l1.175 2.05q.35.575.2 1.225t-.675 1.075l-1.325 1q.025.175.025.338v.674q0 .163-.05.338l1.325 1q.525.425.675 1.075t-.2 1.225l-1.2 2.05q-.35.575-.975.8t-1.25-.05l-1.5-.65q-.275.2-.575.375t-.6.3l-.225 1.65q-.1.65-.587 1.1t-1.163.45zm1.225-6.5q1.45 0 2.475-1.025T15.55 12t-1.025-2.475T12.05 8.5q-1.475 0-2.488 1.025T8.55 12t1.013 2.475T12.05 15.5"
+    />
+  </svg>
+);
+
+export const CreditCard = ({
+  size = 24,
+  width,
+  height,
+  ...props
+}: IconSvgProps) => (
+  <svg
+    aria-hidden="true"
+    height={size || height}
+    viewBox="0 0 24 24"
+    width={size || width}
+    {...props}
+  >
+    <path
+      fill="currentColor"
+      d="M32 416a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V222H32Zm66-138a8 8 0 0 1 8-8h92a8 8 0 0 1 8 8v64a8 8 0 0 1-8 8h-92a8 8 0 0 1-8-8ZM464 80H48a16 16 0 0 0-16 16v66h448V96a16 16 0 0 0-16-16"
+    />
+  </svg>
+);
+
+export const Target = ({
+  size = 24,
+  width,
+  height,
+  ...props
+}: IconSvgProps) => (
+  <svg
+    aria-hidden="true"
+    height={size || height}
+    viewBox="0 0 24 24"
+    width={size || width}
+    {...props}
+  >
+    <path
+      fill="currentColor"
+      d="M24 12a1.25 1.25 0 0 0-1.25-1.25h-1.59a9.27 9.27 0 0 0-7.91-7.91V1.25a1.25 1.25 0 0 0-2.5 0v1.59a9.27 9.27 0 0 0-7.91 7.91H1.25a1.25 1.25 0 0 0 0 2.5h1.59a9.25 9.25 0 0 0 7.91 7.9v1.6a1.25 1.25 0 0 0 2.5 0v-1.6a9.25 9.25 0 0 0 7.91-7.9h1.59A1.25 1.25 0 0 0 24 12m-10.44 6.56a.23.23 0 0 1-.21 0a.24.24 0 0 1-.1-.19v-1.12a1.25 1.25 0 0 0-2.5 0v1.07a.24.24 0 0 1-.1.19a.23.23 0 0 1-.21 0a6.74 6.74 0 0 1-5-5a.28.28 0 0 1 0-.22a.25.25 0 0 1 .2-.09h1.11a1.25 1.25 0 0 0 0-2.5H5.68a.25.25 0 0 1-.24-.31a6.76 6.76 0 0 1 5-5a.26.26 0 0 1 .21.05a.26.26 0 0 1 .1.2v1.11a1.25 1.25 0 0 0 2.5 0V5.68a.26.26 0 0 1 .1-.2a.26.26 0 0 1 .21-.05a6.76 6.76 0 0 1 5 5a.25.25 0 0 1-.24.31h-1.07a1.25 1.25 0 0 0 0 2.5h1.07a.25.25 0 0 1 .2.09a.28.28 0 0 1 0 .22a6.74 6.74 0 0 1-4.96 5.01"
+    />
+  </svg>
+);
+
+export const Tag = ({ size = 24, width, height, ...props }: IconSvgProps) => (
+  <svg
+    aria-hidden="true"
+    height={size || height}
+    viewBox="0 0 24 24"
+    width={size || width}
+    {...props}
+  >
+    <path
+      fill="currentColor"
+      d="M11.172 2a3 3 0 0 1 2.121.879l7.71 7.71a3.41 3.41 0 0 1 0 4.822l-5.592 5.592a3.41 3.41 0 0 1-4.822 0l-7.71-7.71A3 3 0 0 1 2 11.172V6a4 4 0 0 1 4-4zM7.5 5.5a2 2 0 0 0-1.995 1.85L5.5 7.5a2 2 0 1 0 2-2"
     />
   </svg>
 );

@@ -1,18 +1,18 @@
 // Financial entry types
 export enum EntryType {
   EXPENSE = "EXPENSE",
-  INCOME = "INCOME", 
-  SAVINGS = "SAVINGS"
+  INCOME = "INCOME",
+  SAVINGS = "SAVINGS",
 }
 
 // Account types for different financial accounts
 export enum AccountType {
   SAVINGS = "SAVINGS",
   CHECKING = "CHECKING",
-  CREDIT_CARD = "CREDIT_CARD", 
+  CREDIT_CARD = "CREDIT_CARD",
   CASH = "CASH",
   INVESTMENT = "INVESTMENT",
-  OTHER = "OTHER"
+  OTHER = "OTHER",
 }
 
 // Type guards for runtime validation
@@ -31,8 +31,6 @@ export const getEntryTypeLabel = (type: EntryType): string => {
       return "Gasto";
     case EntryType.INCOME:
       return "Ingreso";
-    case EntryType.SAVINGS:
-      return "Ahorro";
     default:
       return type;
   }

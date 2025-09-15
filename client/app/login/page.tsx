@@ -7,6 +7,7 @@ import { Card } from "@heroui/card";
 import { CardBody } from "@heroui/card";
 import { CardHeader } from "@heroui/card";
 import { useAuth } from "@/contexts/auth-context";
+import { Logo } from "@/components/icons";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,9 +30,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col gap-3 pb-0">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600">
-            <span className="text-2xl font-bold text-white">₦</span>
-          </div>
+          <Logo size={48}></Logo>
           <div className="text-center">
             <h1 className="text-2xl font-bold">Bienvenido a NiunMango</h1>
             <p className="text-small text-default-500 mt-1">

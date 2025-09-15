@@ -11,8 +11,9 @@ import { Divider } from "@heroui/divider";
 import { Chip } from "@heroui/chip";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
+import { addToast } from "@heroui/toast";
 
-type EntryType = "INCOME" | "EXPENSE" | "SAVINGS";
+type EntryType = "INCOME" | "EXPENSE";
 type Category = { id: string; name: string };
 type Account = { id: string; name: string; type: string; balance: number };
 
@@ -32,6 +33,7 @@ export default function NewEntryPage() {
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedAccountId, setSelectedAccountId] = useState("");
   const [accountEntries, setAccountEntries] = useState<AccountEntry[]>([]);
   const [multipleAccounts, setMultipleAccounts] = useState(false);
 
@@ -54,10 +56,13 @@ export default function NewEntryPage() {
 
         // Initialize with first account if available
         if (accountsData.length > 0) {
-          setAccountEntries([{ accountId: accountsData[0].id, amount: 0 }]);
+          setSelectedAccountId(accountsData[0].id);
         }
       } catch (error) {
-        console.error("Error loading data:", error);
+        addToast({
+          title: "Error",
+          description: "Error cargando datos.",
+        });
       } finally {
         setLoadingData(false);
       }
@@ -68,44 +73,79 @@ export default function NewEntryPage() {
     }
   }, [authLoading, get]);
 
-  // Update account amounts when total amount changes
+  // Handle switching between single and multiple accounts
   useEffect(() => {
-    const numAmount = parseFloat(amount) || 0;
-    if (!multipleAccounts && accountEntries.length === 1) {
-      setAccountEntries((prev) => [{ ...prev[0], amount: numAmount }]);
+    if (multipleAccounts) {
+      // Switch to multiple accounts mode
+      if (selectedAccountId) {
+        setAccountEntries([
+          { accountId: selectedAccountId, amount: parseFloat(amount) || 0 },
+        ]);
+      }
+    } else {
+      // Switch to single account mode
+      setAccountEntries([]);
     }
-  }, [amount, multipleAccounts, accountEntries.length]);
+  }, [multipleAccounts, selectedAccountId, amount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!amount || !description || !categoryId || accountEntries.length === 0) {
+    if (!amount || !categoryId) {
       return;
     }
 
-    const totalAccountAmount = accountEntries.reduce(
-      (sum, entry) => sum + entry.amount,
-      0
-    );
-    if (Math.abs(totalAccountAmount - parseFloat(amount)) > 0.01) {
-      alert("La suma de las cuentas debe ser igual al monto total");
-      return;
+    // Validate accounts
+    if (multipleAccounts) {
+      if (accountEntries.length === 0) {
+        addToast({
+          title: "Error",
+          description: "Debe seleccionar al menos una cuenta.",
+        });
+        return;
+      }
+
+      const totalAccountAmount = accountEntries.reduce(
+        (sum, entry) => sum + entry.amount,
+        0
+      );
+      if (Math.abs(totalAccountAmount - parseFloat(amount)) > 0.01) {
+        addToast({
+          title: "Valores no calzan!",
+          description: "Asegurate que los montos concuerden con el total.",
+        });
+        return;
+      }
+    } else {
+      if (!selectedAccountId) {
+        addToast({
+          title: "Error",
+          description: "Debe seleccionar una cuenta.",
+        });
+        return;
+      }
     }
 
     try {
+      const finalAccountEntries = multipleAccounts
+        ? accountEntries
+        : [{ accountId: selectedAccountId, amount: parseFloat(amount) }];
+
       await post("/entries", {
         type,
         amount: parseFloat(amount),
         description,
         categoryId,
         date: new Date(date),
-        accountEntries,
+        accountEntries: finalAccountEntries,
       });
 
       router.push("/entries");
     } catch (error) {
-      console.error("Error creating entry:", error);
-      alert("Error al crear la entrada");
+      addToast({
+        title: "Error",
+        description: "Error creando entrada, prueba nuevamente.",
+      });
     }
   };
 
@@ -138,8 +178,6 @@ export default function NewEntryPage() {
         return "success";
       case "EXPENSE":
         return "danger";
-      case "SAVINGS":
-        return "primary";
       default:
         return "default";
     }
@@ -151,8 +189,6 @@ export default function NewEntryPage() {
         return "Ingreso";
       case "EXPENSE":
         return "Gasto";
-      case "SAVINGS":
-        return "Ahorro";
       default:
         return "";
     }
@@ -192,7 +228,6 @@ export default function NewEntryPage() {
             >
               <SelectItem key="EXPENSE">💸 Gasto</SelectItem>
               <SelectItem key="INCOME">💰 Ingreso</SelectItem>
-              <SelectItem key="SAVINGS">🏦 Ahorro</SelectItem>
             </Select>
 
             {/* Amount and Date */}
@@ -222,7 +257,6 @@ export default function NewEntryPage() {
               placeholder="Describe esta transacción..."
               value={description}
               onValueChange={setDescription}
-              isRequired
             />
 
             {/* Category */}
@@ -245,7 +279,7 @@ export default function NewEntryPage() {
             {/* Accounts Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Cuentas Afectadas</h3>
+                <h3 className="text-lg font-semibold">Cuenta Afectada</h3>
                 <Switch
                   size="sm"
                   isSelected={multipleAccounts}
@@ -255,72 +289,88 @@ export default function NewEntryPage() {
                 </Switch>
               </div>
 
-              {accountEntries.map((entry, index) => (
-                <div key={index} className="flex gap-3 items-end">
-                  <Select
-                    label={`Cuenta ${index + 1}`}
-                    placeholder="Selecciona cuenta"
-                    className="flex-1"
-                    selectedKeys={entry.accountId ? [entry.accountId] : []}
-                    onSelectionChange={(keys) =>
-                      updateAccountEntry(
-                        index,
-                        "accountId",
-                        Array.from(keys)[0] as string
-                      )
-                    }
-                    isRequired
-                  >
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id}>
-                        {account.name} (${account.balance.toFixed(2)})
-                      </SelectItem>
-                    ))}
-                  </Select>
-
-                  {multipleAccounts && (
-                    <Input
-                      label="Monto"
-                      placeholder="0.00"
-                      startContent="$"
-                      type="number"
-                      step="0.01"
-                      className="w-32"
-                      value={entry.amount.toString()}
-                      onValueChange={(value) =>
-                        updateAccountEntry(
-                          index,
-                          "amount",
-                          parseFloat(value) || 0
-                        )
-                      }
-                      isRequired
-                    />
-                  )}
-
-                  {multipleAccounts && accountEntries.length > 1 && (
-                    <Button
-                      color="danger"
-                      variant="flat"
-                      size="sm"
-                      onClick={() => removeAccount(index)}
-                    >
-                      ✕
-                    </Button>
-                  )}
-                </div>
-              ))}
-
-              {multipleAccounts && (
-                <Button
-                  color="primary"
-                  variant="flat"
-                  size="sm"
-                  onClick={addAccount}
-                  className="w-full"
+              {!multipleAccounts ? (
+                // Single account mode
+                <Select
+                  label="Cuenta"
+                  placeholder="Selecciona una cuenta"
+                  selectedKeys={selectedAccountId ? [selectedAccountId] : []}
+                  onSelectionChange={(keys) =>
+                    setSelectedAccountId(Array.from(keys)[0] as string)
+                  }
+                  isRequired
                 >
-                  + Agregar Cuenta
-                </Button>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id}>{account.name}</SelectItem>
+                  ))}
+                </Select>
+              ) : (
+                // Multiple accounts mode
+                <>
+                  {accountEntries.map((entry, index) => (
+                    <div key={index} className="flex gap-3 items-end">
+                      <Select
+                        label={`Cuenta ${index + 1}`}
+                        placeholder="Selecciona cuenta"
+                        className="flex-1"
+                        selectedKeys={entry.accountId ? [entry.accountId] : []}
+                        onSelectionChange={(keys) =>
+                          updateAccountEntry(
+                            index,
+                            "accountId",
+                            Array.from(keys)[0] as string
+                          )
+                        }
+                        isRequired
+                      >
+                        {accounts.map((account) => (
+                          <SelectItem key={account.id}>
+                            {account.name}
+                          </SelectItem>
+                        ))}
+                      </Select>
+
+                      <Input
+                        label="Monto"
+                        placeholder="0.00"
+                        startContent="$"
+                        type="number"
+                        step="0.01"
+                        className="w-32"
+                        value={entry.amount.toString()}
+                        onValueChange={(value) =>
+                          updateAccountEntry(
+                            index,
+                            "amount",
+                            parseFloat(value) || 0
+                          )
+                        }
+                        isRequired
+                      />
+
+                      {accountEntries.length > 1 && (
+                        <Button
+                          color="danger"
+                          variant="flat"
+                          size="sm"
+                          onClick={() => removeAccount(index)}
+                        >
+                          ✕
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+
+                  <Button
+                    color="primary"
+                    variant="flat"
+                    size="sm"
+                    onClick={addAccount}
+                    className="w-full"
+                  >
+                    + Agregar Cuenta
+                  </Button>
+                </>
               )}
             </div>
 

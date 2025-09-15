@@ -6,18 +6,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Divider } from "@heroui/divider";
-import { Progress } from "@heroui/progress";
-import { Chip } from "@heroui/chip";
 
-import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@heroui/table";
-import { Tab, Tabs } from "@heroui/tabs";
+import NextLink from "next/link";
 import { useApi } from "@/hooks/useApi";
 
 interface Stats {
@@ -27,56 +17,27 @@ interface Stats {
   netIncome: number;
 }
 
-interface Account {
-  id: string;
-  name: string;
-  type: string;
-  balance: number;
-  isActive: boolean;
-}
-
-interface Budget {
-  id: string;
-  name: string;
-  totalBudgeted: number;
-  totalSpent: number;
-  overallPercentage: number;
-  budgetItems: Array<{
-    category: { name: string };
-    budgetedAmount: number;
-    spent: number;
-    percentage: number;
-  }>;
-}
-
 export default function DashboardPage() {
-  const { user, isLoading: authLoading, logout } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   console.log("current user: ", user);
   const { get, loading } = useApi();
   const router = useRouter();
 
   // State
   const [stats, setStats] = useState<Stats | null>(null);
-  const [accounts, setAccounts] = useState<Account[]>([]);
   const [netWorth, setNetWorth] = useState(0);
-  const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
 
   // Load dashboard data
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [statsData, accountsData, netWorthData, budgetData] =
-          await Promise.all([
-            get<Stats>("/entries/stats"),
-            get<Account[]>("/accounts"),
-            get<{ netWorth: number }>("/accounts/net-worth"),
-            get<Budget>("/budgets/current").catch(() => null),
-          ]);
+        const [statsData, netWorthData] = await Promise.all([
+          get<Stats>("/entries/stats"),
+          get<{ netWorth: number }>("/accounts/net-worth"),
+        ]);
 
         setStats(statsData);
-        setAccounts(accountsData);
-        setNetWorth(netWorthData.netWorth);
-        setCurrentBudget(budgetData);
+        setNetWorth(Number(netWorthData?.netWorth) || 0);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
       }
@@ -86,45 +47,6 @@ export default function DashboardPage() {
       loadDashboardData();
     }
   }, [authLoading, get]);
-
-  const handleSignOut = async () => {
-    await logout();
-    router.push("/login");
-  };
-
-  const getAccountTypeColor = (type: string) => {
-    switch (type) {
-      case "SAVINGS":
-        return "success";
-      case "CHECKING":
-        return "primary";
-      case "CREDIT_CARD":
-        return "warning";
-      case "CASH":
-        return "secondary";
-      case "INVESTMENT":
-        return "default";
-      default:
-        return "default";
-    }
-  };
-
-  const getAccountTypeLabel = (type: string) => {
-    switch (type) {
-      case "SAVINGS":
-        return "Ahorros";
-      case "CHECKING":
-        return "Cuenta Corriente";
-      case "CREDIT_CARD":
-        return "Tarjeta Crédito";
-      case "CASH":
-        return "Efectivo";
-      case "INVESTMENT":
-        return "Inversión";
-      default:
-        return type;
-    }
-  };
 
   if (authLoading || loading) {
     return (
@@ -153,6 +75,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-5">
         <Button
           color="success"
+          variant="flat"
           className="h-20 flex-col"
           onPress={() => router.push("/entries/new?type=INCOME")}
         >
@@ -189,7 +112,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardBody className="pt-0">
             <p className="text-2xl font-bold text-green-600">
-              ${netWorth.toFixed(2)}
+              ${(Number(netWorth) || 0).toFixed(2)}
             </p>
             <p className="text-small text-default-500">
               Total en todas las cuentas
@@ -217,7 +140,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardBody className="pt-0">
             <p className="text-2xl font-bold text-red-600">
-              ${stats?.expenses.total.toFixed(2) || "0.00"}
+              ${stats?.expenses.total || "0.00"}
             </p>
             <p className="text-small text-default-500">
               {stats?.expenses.count || 0} transacciones
@@ -235,160 +158,62 @@ export default function DashboardPage() {
                 (stats?.netIncome || 0) >= 0 ? "text-green-600" : "text-red-600"
               }`}
             >
-              ${stats?.netIncome.toFixed(2) || "0.00"}
+              ${stats?.netIncome || "0.00"}
             </p>
             <p className="text-small text-default-500">Ingresos - Gastos</p>
           </CardBody>
         </Card>
       </div>
 
-      {/* Content Tabs */}
-      <Tabs aria-label="Dashboard content" variant="underlined" color="primary">
-        <Tab key="accounts" title="Cuentas">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center w-full">
-                <h3 className="text-lg font-semibold">Mis Cuentas</h3>
-                <Button size="sm" color="primary" variant="flat">
-                  + Nueva Cuenta
-                </Button>
-              </div>
-            </CardHeader>
-            <Divider />
-            <CardBody className="p-0">
-              <Table aria-label="Tabla de cuentas">
-                <TableHeader>
-                  <TableColumn>NOMBRE</TableColumn>
-                  <TableColumn>TIPO</TableColumn>
-                  <TableColumn>BALANCE</TableColumn>
-                  <TableColumn>ESTADO</TableColumn>
-                </TableHeader>
-                <TableBody items={accounts}>
-                  {(account) => (
-                    <TableRow key={account.id}>
-                      <TableCell>
-                        <p className="font-medium">{account.name}</p>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          color={getAccountTypeColor(account.type)}
-                          variant="flat"
-                          size="sm"
-                        >
-                          {getAccountTypeLabel(account.type)}
-                        </Chip>
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className={`font-bold ${
-                            account.balance >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          ${account.balance.toFixed(2)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          color={account.isActive ? "success" : "default"}
-                          variant="flat"
-                          size="sm"
-                        >
-                          {account.isActive ? "Activa" : "Inactiva"}
-                        </Chip>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardBody>
-          </Card>
-        </Tab>
-
-        <Tab key="budget" title="Presupuesto">
-          {currentBudget ? (
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center w-full">
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      {currentBudget.name}
-                    </h3>
-                    <p className="text-small text-default-500">
-                      Progreso general:{" "}
-                      {currentBudget.overallPercentage.toFixed(1)}%
-                    </p>
-                  </div>
-                  <Button size="sm" color="primary" variant="flat">
-                    Editar Presupuesto
-                  </Button>
-                </div>
-              </CardHeader>
-              <Divider />
-              <CardBody>
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-small font-medium">
-                      Progreso Total
-                    </span>
-                    <span className="text-small">
-                      ${currentBudget.totalSpent.toFixed(2)} / $
-                      {currentBudget.totalBudgeted.toFixed(2)}
-                    </span>
-                  </div>
-                  <Progress
-                    value={currentBudget.overallPercentage}
-                    color={
-                      currentBudget.overallPercentage > 100
-                        ? "danger"
-                        : "primary"
-                    }
-                    className="mb-4"
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  {currentBudget.budgetItems.map((item, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-medium">{item.category.name}</h4>
-                        <span className="text-small">
-                          ${item.spent.toFixed(2)} / $
-                          {item.budgetedAmount.toFixed(2)}
-                        </span>
-                      </div>
-                      <Progress
-                        value={item.percentage}
-                        color={item.percentage > 100 ? "danger" : "success"}
-                        size="sm"
-                      />
-                      <p className="text-tiny text-default-500 mt-1">
-                        {item.percentage.toFixed(1)}% utilizado
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardBody>
-            </Card>
-          ) : (
-            <Card>
-              <CardBody className="text-center py-12">
-                <div className="mb-4">
-                  <span className="text-4xl">📊</span>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">
-                  Sin Presupuesto Activo
-                </h3>
-                <p className="text-default-500 mb-4">
-                  Crea tu primer presupuesto para controlar tus gastos
-                </p>
-                <Button color="primary">Crear Presupuesto</Button>
-              </CardBody>
-            </Card>
-          )}
-        </Tab>
-      </Tabs>
+      {/* Configuration Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <h3 className="text-lg font-semibold">
+                Configuración Financiera
+              </h3>
+              <p className="text-small text-default-500">
+                Administra tus categorías, presupuestos y cuentas
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <Divider />
+        <CardBody className="text-center py-12">
+          <div className="mb-6">
+            <span className="text-6xl">⚙️</span>
+          </div>
+          <h3 className="text-xl font-semibold mb-2">
+            Configura tu App Financiera
+          </h3>
+          <p className="text-default-500 mb-6 max-w-md mx-auto">
+            Para aprovechar al máximo NiunMango, configura tus categorías de
+            gastos, crea presupuestos y administra tus cuentas desde la página
+            de configuraciones.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              as={NextLink}
+              href="/settings"
+              color="primary"
+              size="lg"
+              className="font-medium"
+            >
+              Ir a Configuraciones
+            </Button>
+            <Button
+              as={NextLink}
+              href="/entries"
+              variant="bordered"
+              size="lg"
+              className="font-medium"
+            >
+              Ver Mis Entradas
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
     </div>
   );
 }

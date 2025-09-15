@@ -129,7 +129,7 @@ export default function EntriesPage() {
 
   const formatAmount = (amount: number, type: EntryType) => {
     const sign = type === "EXPENSE" ? "-" : "+";
-    return `${sign}$${amount.toFixed(2)}`;
+    return `${sign}$${amount}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -184,7 +184,6 @@ export default function EntriesPage() {
             >
               <SelectItem key="INCOME">💰 Ingresos</SelectItem>
               <SelectItem key="EXPENSE">💸 Gastos</SelectItem>
-              <SelectItem key="SAVINGS">🏦 Ahorros</SelectItem>
             </Select>
 
             <Input
@@ -276,10 +275,7 @@ export default function EntriesPage() {
                   <TableCell>
                     <div className="space-y-1">
                       {entry.entryAccounts.map((entryAccount, idx) => (
-                        <Tooltip
-                          key={idx}
-                          content={`$${entryAccount.amount.toFixed(2)}`}
-                        >
+                        <Tooltip key={idx} content={`$${entryAccount.amount}`}>
                           <Chip size="sm" variant="flat" color="secondary">
                             {entryAccount.account.name}
                           </Chip>

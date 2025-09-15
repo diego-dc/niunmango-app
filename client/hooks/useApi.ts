@@ -1,6 +1,7 @@
 "use client";
 
 import { authService } from "@/lib/auth";
+import { addToast } from "@heroui/toast";
 import { useCallback, useState } from "react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -39,6 +40,10 @@ export function useApi() {
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
+          addToast({
+            title: "Error with request",
+            description: "Try again later",
+          });
           throw new Error(error.error || `HTTP ${response.status}`);
         }
 
