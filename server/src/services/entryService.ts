@@ -7,7 +7,7 @@ interface CreateEntryData {
   type: EntryType;
   amount: number;
   description: string;
-  categoryId: string;
+  categoryId: string | null;
   userId: string;
   date?: Date;
   accountEntries: {
@@ -20,7 +20,7 @@ interface UpdateEntryData {
   type?: EntryType;
   amount?: number;
   description?: string;
-  categoryId?: string;
+  categoryId?: string | null;
   date?: Date;
   accountEntries?: {
     accountId: string;
@@ -119,15 +119,29 @@ export const entryService = {
           }
         });
 
-        const multiplier = data.type === EntryType.EXPENSE ? -1 : 1;
-        await tx.account.update({
-          where: { id: accountEntry.accountId },
-          data: {
-            balance: {
-              increment: accountEntry.amount * multiplier
+        // Handle different entry types
+        if (data.type === EntryType.TRANSFER) {
+          // For transfers, use the amount directly (can be positive or negative)
+          await tx.account.update({
+            where: { id: accountEntry.accountId },
+            data: {
+              balance: {
+                increment: accountEntry.amount
+              }
             }
-          }
-        });
+          });
+        } else {
+          // For INCOME/EXPENSE, use the traditional logic
+          const multiplier = data.type === EntryType.EXPENSE ? -1 : 1;
+          await tx.account.update({
+            where: { id: accountEntry.accountId },
+            data: {
+              balance: {
+                increment: accountEntry.amount * multiplier
+              }
+            }
+          });
+        }
       }
 
       return await tx.entry.findUnique({
@@ -156,16 +170,30 @@ export const entryService = {
       if (!existingEntry) return null;
 
       if (data.accountEntries) {
+        // Revert the previous account changes
         for (const existingAccountEntry of existingEntry.entryAccounts) {
-          const multiplier = existingEntry.type === EntryType.EXPENSE ? 1 : -1;
-          await tx.account.update({
-            where: { id: existingAccountEntry.accountId },
-            data: {
-              balance: {
-                increment: existingAccountEntry.amount.toNumber() * multiplier
+          if (existingEntry.type === EntryType.TRANSFER) {
+            // For transfers, revert the exact amount
+            await tx.account.update({
+              where: { id: existingAccountEntry.accountId },
+              data: {
+                balance: {
+                  increment: -existingAccountEntry.amount.toNumber()
+                }
               }
-            }
-          });
+            });
+          } else {
+            // For INCOME/EXPENSE, use the traditional logic
+            const multiplier = existingEntry.type === EntryType.EXPENSE ? 1 : -1;
+            await tx.account.update({
+              where: { id: existingAccountEntry.accountId },
+              data: {
+                balance: {
+                  increment: existingAccountEntry.amount.toNumber() * multiplier
+                }
+              }
+            });
+          }
         }
 
         await tx.entryAccount.deleteMany({
@@ -185,6 +213,8 @@ export const entryService = {
       });
 
       if (data.accountEntries) {
+        const entryType = data.type || existingEntry.type;
+
         for (const accountEntry of data.accountEntries) {
           await tx.entryAccount.create({
             data: {
@@ -194,15 +224,29 @@ export const entryService = {
             }
           });
 
-          const multiplier = (data.type || existingEntry.type) === EntryType.EXPENSE ? -1 : 1;
-          await tx.account.update({
-            where: { id: accountEntry.accountId },
-            data: {
-              balance: {
-                increment: accountEntry.amount * multiplier
+          // Handle different entry types
+          if (entryType === EntryType.TRANSFER) {
+            // For transfers, use the amount directly (can be positive or negative)
+            await tx.account.update({
+              where: { id: accountEntry.accountId },
+              data: {
+                balance: {
+                  increment: accountEntry.amount
+                }
               }
-            }
-          });
+            });
+          } else {
+            // For INCOME/EXPENSE, use the traditional logic
+            const multiplier = entryType === EntryType.EXPENSE ? -1 : 1;
+            await tx.account.update({
+              where: { id: accountEntry.accountId },
+              data: {
+                balance: {
+                  increment: accountEntry.amount * multiplier
+                }
+              }
+            });
+          }
         }
       }
 
@@ -264,7 +308,7 @@ export const entryService = {
       if (endDate) where.date.lte = endDate;
     }
 
-    const [income, expenses, savings] = await Promise.all([
+    const [income, expenses] = await Promise.all([
       prisma.entry.aggregate({
         where: { ...where, type: EntryType.INCOME },
         _sum: { amount: true },
@@ -274,17 +318,11 @@ export const entryService = {
         where: { ...where, type: EntryType.EXPENSE },
         _sum: { amount: true },
         _count: true
-      }),
-      prisma.entry.aggregate({
-        where: { ...where, type: EntryType.SAVINGS },
-        _sum: { amount: true },
-        _count: true
       })
     ]);
 
     const totalIncome = income._sum.amount || 0;
     const totalExpenses = expenses._sum.amount || 0;
-    const totalSavings = savings._sum.amount || 0;
 
     return {
       income: {
@@ -295,18 +333,14 @@ export const entryService = {
         total: totalExpenses,
         count: expenses._count
       },
-      savings: {
-        total: totalSavings,
-        count: savings._count
-      },
       netIncome: Number(totalIncome) - Number(totalExpenses),
-      totalTransactions: income._count + expenses._count + savings._count
+      totalTransactions: income._count + expenses._count
     };
   },
 
   async getByCategory(userId: string, categoryId: string, startDate?: Date, endDate?: Date) {
     const where: any = { userId, categoryId };
-    
+
     if (startDate || endDate) {
       where.date = {};
       if (startDate) where.date.gte = startDate;
@@ -315,6 +349,22 @@ export const entryService = {
 
     return await prisma.entry.findMany({
       where,
+      orderBy: { date: "desc" },
+      include: {
+        category: true,
+        entryAccounts: {
+          include: {
+            account: true
+          }
+        }
+      }
+    });
+  },
+
+  async getRecentByUserId(userId: string, limit: number = 5) {
+    return await prisma.entry.findMany({
+      where: { userId },
+      take: limit,
       orderBy: { date: "desc" },
       include: {
         category: true,

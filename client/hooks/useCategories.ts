@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { addToast } from "@heroui/toast";
+
 import { useApi } from "./useApi";
 
 export type Category = {
@@ -16,10 +18,16 @@ export function useCategories() {
     try {
       setIsLoading(true);
       const data = await get<Category[]>("/categories");
+
       if (data) {
         setCategories(data);
       }
     } catch (error) {
+      addToast({
+        title: "Error",
+        description: "No se pudieron cargar las categorías.",
+        color: "danger",
+      });
       console.error("Error loading categories:", error);
     } finally {
       setIsLoading(false);
@@ -29,8 +37,10 @@ export function useCategories() {
   const createCategory = async (name: string) => {
     try {
       const newCategory = await post<Category>("/categories", { name });
+
       if (newCategory) {
         setCategories((prev) => [...prev, newCategory]);
+
         return newCategory;
       }
     } catch (error) {

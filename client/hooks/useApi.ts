@@ -1,8 +1,9 @@
 "use client";
 
-import { authService } from "@/lib/auth";
 import { addToast } from "@heroui/toast";
 import { useCallback, useState } from "react";
+
+import { authService } from "@/lib/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -16,7 +17,7 @@ export function useApi() {
   const makeRequest = useCallback(
     async <T = any>(
       endpoint: string,
-      options: ApiRequestOptions = {}
+      options: ApiRequestOptions = {},
     ): Promise<T> => {
       const { authenticated = true, ...fetchOptions } = options;
 
@@ -40,61 +41,67 @@ export function useApi() {
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
+
           addToast({
-            title: "Error with request",
-            description: "Try again later",
+            title: "Error en la solicitud",
+            description:
+              error.error || "Error del servidor. Intenta de nuevo más tarde.",
+            color: "danger",
           });
           throw new Error(error.error || `HTTP ${response.status}`);
         }
 
-        const data = await response.json();
+        // Handle empty responses (like 204 No Content)
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : null;
+
         return data;
       } finally {
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
   // Convenience methods
   const get = useCallback(
     <T = any>(endpoint: string, options?: Omit<ApiRequestOptions, "method">) =>
       makeRequest<T>(endpoint, { ...options, method: "GET" }),
-    [makeRequest]
+    [makeRequest],
   );
 
   const post = useCallback(
     <T = any>(
       endpoint: string,
       data?: any,
-      options?: Omit<ApiRequestOptions, "method" | "body">
+      options?: Omit<ApiRequestOptions, "method" | "body">,
     ) =>
       makeRequest<T>(endpoint, {
         ...options,
         method: "POST",
         body: data ? JSON.stringify(data) : undefined,
       }),
-    [makeRequest]
+    [makeRequest],
   );
 
   const put = useCallback(
     <T = any>(
       endpoint: string,
       data?: any,
-      options?: Omit<ApiRequestOptions, "method" | "body">
+      options?: Omit<ApiRequestOptions, "method" | "body">,
     ) =>
       makeRequest<T>(endpoint, {
         ...options,
         method: "PUT",
         body: data ? JSON.stringify(data) : undefined,
       }),
-    [makeRequest]
+    [makeRequest],
   );
 
   const del = useCallback(
     <T = any>(endpoint: string, options?: Omit<ApiRequestOptions, "method">) =>
       makeRequest<T>(endpoint, { ...options, method: "DELETE" }),
-    [makeRequest]
+    [makeRequest],
   );
 
   return {

@@ -2,7 +2,7 @@
 export enum EntryType {
   EXPENSE = "EXPENSE",
   INCOME = "INCOME",
-  SAVINGS = "SAVINGS",
+  TRANSFER = "TRANSFER",
 }
 
 // Account types for different financial accounts
@@ -31,6 +31,8 @@ export const getEntryTypeLabel = (type: EntryType): string => {
       return "Gasto";
     case EntryType.INCOME:
       return "Ingreso";
+    case EntryType.TRANSFER:
+      return "Transferencia";
     default:
       return type;
   }

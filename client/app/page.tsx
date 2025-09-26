@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import { CardBody } from "@heroui/card";
 import { Card } from "@heroui/card";
+
+import { useAuth } from "@/contexts/auth-context";
 import { title, subtitle } from "@/components/primitives";
 import { Logo } from "@/components/icons";
 
@@ -22,7 +23,7 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -35,7 +36,7 @@ export default function Home() {
     <section className="flex flex-col items-center justify-center gap-8 py-8 md:py-10 min-h-screen">
       <div className="inline-block max-w-4xl text-center justify-center">
         <div className="flex items-center justify-center mb-6">
-          <Logo size={48}></Logo>
+          <Logo size={48} />
         </div>
 
         <span className={title({ size: "lg" })}>NiunMango</span>
@@ -81,8 +82,8 @@ export default function Home() {
 
       <div className="flex flex-col sm:flex-row gap-4 mt-8">
         <Button
-          variant="bordered"
           size="lg"
+          variant="bordered"
           onClick={() => router.push("/login")}
         >
           Iniciar Sesión

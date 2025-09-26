@@ -75,12 +75,14 @@ class AuthService {
         if (response.status === 401) {
           this.removeToken();
         }
+
         return null;
       }
 
       return await response.json();
     } catch (error) {
       console.error("Get current user error:", error);
+
       return null;
     }
   }
@@ -100,10 +102,13 @@ class AuthService {
       if (!response.ok) return false;
 
       const { token } = await response.json();
+
       this.setToken(token);
+
       return true;
     } catch (error) {
       console.error("Refresh token error:", error);
+
       return false;
     }
   }

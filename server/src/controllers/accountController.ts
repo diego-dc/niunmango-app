@@ -10,7 +10,7 @@ export const accountController = {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const accounts = await accountService.getAllByUserId(userId);
+      const accounts = await accountService.getAllByUserId(userId, false); // Show all accounts (active and inactive)
       return res.json(accounts);
     } catch (error) {
       return res.status(500).json({ error: "Failed to fetch accounts" });
@@ -51,6 +51,20 @@ export const accountController = {
     }
   },
 
+  async getDistribution(req: Request, res: Response) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const distribution = await accountService.getAccountsDistributionByUserId(userId);
+      return res.json(distribution);
+    } catch (error) {
+      return res.status(500).json({ error: "Failed to get accounts distribution" });
+    }
+  },
+
   async create(req: Request, res: Response) {
     try {
       const { name, type, balance = 0 } = req.body;
@@ -79,7 +93,9 @@ export const accountController = {
       if (error.code === "P2002") {
         return res.status(400).json({ error: "Account name already exists" });
       }
-      return res.status(500).json({ error: "Failed to create account" });
+      return res
+        .status(500)
+        .json({ error: "Failed to create account", message: error });
     }
   },
 

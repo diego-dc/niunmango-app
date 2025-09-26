@@ -1,8 +1,9 @@
 "use client";
 
-import { useAuth as useAuthContext } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+
+import { useAuth as useAuthContext } from "@/contexts/auth-context";
 
 export function useAuth(requireAuth: boolean = true) {
   const { user, isLoading, isAuthenticated } = useAuthContext();
@@ -17,7 +18,11 @@ export function useAuth(requireAuth: boolean = true) {
   return {
     session: { user }, // For backwards compatibility
     user,
-    status: isLoading ? "loading" : isAuthenticated ? "authenticated" : "unauthenticated",
+    status: isLoading
+      ? "loading"
+      : isAuthenticated
+        ? "authenticated"
+        : "unauthenticated",
     isLoading,
     isAuthenticated,
     isUnauthenticated: !isAuthenticated,

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { addToast } from "@heroui/toast";
+
 import { useApi } from "./useApi";
-import { Category } from "./useCategories";
 
 export type Budget = {
   id: string;
@@ -39,14 +40,16 @@ export function useBudgets() {
   const { get, post, put, delete: deleteRequest, loading } = useApi();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
+  const [activeBudgets, setActiveBudgets] = useState<Budget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadBudgets = async () => {
     try {
       setIsLoading(true);
-      const [budgetsData, currentBudgetData] = await Promise.all([
+      const [budgetsData, currentBudgetData, activeBudgetsData] = await Promise.all([
         get<Budget[]>("/budgets"),
         get<Budget>("/budgets/current").catch(() => null),
+        get<Budget[]>("/budgets/active").catch(() => []),
       ]);
 
       if (budgetsData) {
@@ -55,7 +58,15 @@ export function useBudgets() {
       if (currentBudgetData) {
         setCurrentBudget(currentBudgetData);
       }
+      if (activeBudgetsData) {
+        setActiveBudgets(activeBudgetsData);
+      }
     } catch (error) {
+      addToast({
+        title: "Error",
+        description: "No se pudieron cargar los presupuestos.",
+        color: "danger",
+      });
       console.error("Error loading budgets:", error);
     } finally {
       setIsLoading(false);
@@ -65,27 +76,46 @@ export function useBudgets() {
   const createBudget = async (budgetData: CreateBudgetData) => {
     try {
       const newBudget = await post<Budget>("/budgets", budgetData);
+
       if (newBudget) {
         setBudgets((prev) => [...prev, newBudget]);
+
         return newBudget;
       }
     } catch (error) {
+      addToast({
+        title: "Error",
+        description: "No se pudo crear el presupuesto.",
+        color: "danger",
+      });
       console.error("Error creating budget:", error);
       throw error;
     }
   };
 
-  const updateBudget = async (id: string, budgetData: Partial<CreateBudgetData>) => {
+  const updateBudget = async (
+    id: string,
+    budgetData: Partial<CreateBudgetData>,
+  ) => {
     try {
       const updatedBudget = await put<Budget>(`/budgets/${id}`, budgetData);
+
       if (updatedBudget) {
-        setBudgets((prev) => prev.map((budget) => budget.id === id ? updatedBudget : budget));
+        setBudgets((prev) =>
+          prev.map((budget) => (budget.id === id ? updatedBudget : budget)),
+        );
         if (currentBudget && currentBudget.id === id) {
           setCurrentBudget(updatedBudget);
         }
+
         return updatedBudget;
       }
     } catch (error) {
+      addToast({
+        title: "Error",
+        description: "No se pudo actualizar el presupuesto.",
+        color: "danger",
+      });
       console.error("Error updating budget:", error);
       throw error;
     }
@@ -99,45 +129,82 @@ export function useBudgets() {
         setCurrentBudget(null);
       }
     } catch (error) {
+      addToast({
+        title: "Error",
+        description: "No se pudo eliminar el presupuesto.",
+        color: "danger",
+      });
       console.error("Error deleting budget:", error);
       throw error;
     }
   };
 
-  const addBudgetItem = async (budgetId: string, itemData: CreateBudgetItemData) => {
+  const addBudgetItem = async (
+    budgetId: string,
+    itemData: CreateBudgetItemData,
+  ) => {
     try {
-      const newItem = await post<BudgetItem>(`/budgets/${budgetId}/items`, itemData);
+      const newItem = await post<BudgetItem>(`/budget-items`, {
+        ...itemData,
+        budgetId,
+      });
+
       if (newItem) {
         // Reload budgets to get updated totals
         await loadBudgets();
+
         return newItem;
       }
     } catch (error) {
+      addToast({
+        title: "Error",
+        description: "No se pudo agregar la categoría al presupuesto.",
+        color: "danger",
+      });
       console.error("Error adding budget item:", error);
       throw error;
     }
   };
 
-  const updateBudgetItem = async (budgetId: string, itemId: string, itemData: Partial<CreateBudgetItemData>) => {
+  const updateBudgetItem = async (
+    _budgetId: string,
+    itemId: string,
+    itemData: Partial<CreateBudgetItemData>,
+  ) => {
     try {
-      const updatedItem = await put<BudgetItem>(`/budgets/${budgetId}/items/${itemId}`, itemData);
+      const updatedItem = await put<BudgetItem>(
+        `/budget-items/${itemId}`,
+        itemData,
+      );
+
       if (updatedItem) {
         // Reload budgets to get updated totals
         await loadBudgets();
+
         return updatedItem;
       }
     } catch (error) {
+      addToast({
+        title: "Error",
+        description: "No se pudo actualizar la categoría del presupuesto.",
+        color: "danger",
+      });
       console.error("Error updating budget item:", error);
       throw error;
     }
   };
 
-  const deleteBudgetItem = async (budgetId: string, itemId: string) => {
+  const deleteBudgetItem = async (_budgetId: string, itemId: string) => {
     try {
-      await deleteRequest(`/budgets/${budgetId}/items/${itemId}`);
+      await deleteRequest(`/budget-items/${itemId}`);
       // Reload budgets to get updated totals
       await loadBudgets();
     } catch (error) {
+      addToast({
+        title: "Error",
+        description: "No se pudo eliminar la categoría del presupuesto.",
+        color: "danger",
+      });
       console.error("Error deleting budget item:", error);
       throw error;
     }
@@ -150,6 +217,7 @@ export function useBudgets() {
   return {
     budgets,
     currentBudget,
+    activeBudgets,
     isLoading,
     createBudget,
     updateBudget,

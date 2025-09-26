@@ -1,14 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Divider } from "@heroui/divider";
-
+import { useDisclosure } from "@heroui/modal";
 import NextLink from "next/link";
+import { addToast } from "@heroui/toast";
+import { Icon } from "@iconify/react";
+
 import { useApi } from "@/hooks/useApi";
+import { useBudgets, Budget } from "@/hooks/useBudgets";
+import { useAccounts } from "@/hooks/useAccounts";
+import { useEntries } from "@/hooks/useEntries";
+import { formatCurrency } from "@/lib/formatters";
+import { useAuth } from "@/contexts/auth-context";
+import { BudgetCarousel } from "@/components/features/BudgetCarousel";
+import { BudgetDetailsModal } from "@/components/features/BudgetDetailsModal";
+import { AccountDistributionBar } from "@/components/features/AccountDistributionBar";
+import { RecentEntriesList } from "@/components/features/RecentEntriesList";
 
 interface Stats {
   income: { total: number; count: number };
@@ -19,26 +30,31 @@ interface Stats {
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
+
   console.log("current user: ", user);
   const { get, loading } = useApi();
+  const { activeBudgets } = useBudgets();
+  const { accountsDistribution, netWorth } = useAccounts();
+  const { recentEntries } = useEntries();
   const router = useRouter();
 
   // State
   const [stats, setStats] = useState<Stats | null>(null);
-  const [netWorth, setNetWorth] = useState(0);
+  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Load dashboard data
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [statsData, netWorthData] = await Promise.all([
-          get<Stats>("/entries/stats"),
-          get<{ netWorth: number }>("/accounts/net-worth"),
-        ]);
-
+        const statsData = await get<Stats>("/entries/stats");
         setStats(statsData);
-        setNetWorth(Number(netWorthData?.netWorth) || 0);
       } catch (error) {
+        addToast({
+          title: "Error",
+          description: "No se pudieron cargar los datos del dashboard.",
+          color: "danger",
+        });
         console.error("Error loading dashboard data:", error);
       }
     };
@@ -48,172 +64,206 @@ export default function DashboardPage() {
     }
   }, [authLoading, get]);
 
+  const handleBudgetClick = (budget: Budget) => {
+    setSelectedBudget(budget);
+    onOpen();
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
+    <div className="max-w-7xl mx-auto p-4 flex flex-col gap-4">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-default-500 mt-1">
-            Bienvenido de vuelta, {user?.name}
-          </p>
+          <p className="text-sm text-default-500 mb-1">Dashboard</p>
+          <div className="flex items-start gap-2 flex-1 flex-col">
+            <div className="flex gap-2 items-center">
+              <Icon
+                icon="heroicons:calendar-days"
+                height={32}
+                width={32}
+                className="text-primary"
+              />
+              <h1 className="text-xl font-bold">
+                {new Date().toLocaleDateString("es-ES", {
+                  weekday: "long",
+                })}
+              </h1>
+            </div>
+            <h1 className="text-3xl font-bold">
+              {new Date().toLocaleDateString("es-ES", {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+              })}
+            </h1>
+          </div>
         </div>
+        <div className="flex justify-center">
+          <Button
+            as={NextLink}
+            className="font-sm flex flex-col h-fit p-4"
+            variant="ghost"
+            color="primary"
+            href="/settings"
+            size="lg"
+          >
+            <Icon icon="material-symbols:settings-rounded" height={32} />
+            Configuraciones
+          </Button>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="flex">
+        <div className="basis-4/8">
+          <div className="pb-2">
+            <h3 className="text-sm text-gray-400">Balance del Mes</h3>
+          </div>
+          <div className="pt-0">
+            <p
+              className={`text-md font-bold ${
+                (stats?.netIncome || 0) >= 0 ? "text-success" : "text-danger"
+              }`}
+            >
+              {formatCurrency(stats?.netIncome || 0)}
+            </p>
+          </div>
+        </div>
+
+        <div className="basis-2/8 flex flex-col items-center justufy-center">
+          <div className="pb-2">
+            <h3 className="text-sm text-gray-400">
+              Ingresos ({stats?.income.count || 0})
+            </h3>
+          </div>
+          <div className="pt-0">
+            <p
+              className={`text-md font-bold ${
+                (stats?.income.count || 0) > 0
+                  ? "bg-success w-fit rounded p-[2px]"
+                  : ""
+              }`}
+            >
+              {formatCurrency(stats?.income.total || 0)}
+            </p>
+          </div>
+        </div>
+
+        <div className="basis-2/8 flex flex-col items-center justufy-center">
+          <div className="pb-2">
+            <h3 className="text-sm text-gray-400">
+              Gastos ({stats?.expenses.count || 0})
+            </h3>
+          </div>
+          <div className="pt-0">
+            <p
+              className={`text-md font-bold ${
+                (stats?.income.count || 0) > 0
+                  ? "bg-danger w-fit rounded p-[2px]"
+                  : ""
+              }`}
+            >
+              {formatCurrency(stats?.expenses.total || 0)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Current Budgets Carrousel */}
+      <div className="my-6">
+        <BudgetCarousel
+          budgets={activeBudgets}
+          onBudgetClick={handleBudgetClick}
+        />
       </div>
 
       {/* Quick Actions */}
 
-      <h3 className="text-lg font-semibold">Acciones Rápidas</h3>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-5">
+      <div className="grid grid-cols-3 gap-4 my-5">
         <Button
-          color="success"
-          variant="flat"
           className="h-20 flex-col"
+          color="default"
+          variant="bordered"
           onPress={() => router.push("/entries/new?type=INCOME")}
         >
-          <span className="text-xl mb-1">💰</span>
+          <Icon icon={"game-icons:receive-money"} height={24} />
           <span className="text-small">Nuevo Ingreso</span>
         </Button>
 
         <Button
-          color="danger"
-          variant="flat"
           className="h-20 flex-col"
+          color="default"
+          variant="bordered"
           onPress={() => router.push("/entries/new?type=EXPENSE")}
         >
-          <span className="text-xl mb-1">💸</span>
+          <Icon icon={"game-icons:pay-money"} height={24} />
           <span className="text-small">Nuevo Gasto</span>
         </Button>
 
         <Button
-          color="secondary"
-          variant="flat"
-          className="h-20 flex-col col-span-2"
-          onPress={() => router.push("/entries")}
+          className="h-20 flex-col"
+          color="default"
+          variant="bordered"
+          onPress={() => router.push("/entries/new?type=TRANSFER")}
         >
-          <span className="text-xl mb-1">📊</span>
-          <span className="text-small">Ver Historial</span>
+          <Icon icon={"hugeicons:money-exchange-03"} height={24} />
+          <span className="text-small">Movimiento</span>
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <h3 className="text-lg font-semibold">Capital Neto</h3>
-          </CardHeader>
-          <CardBody className="pt-0">
-            <p className="text-2xl font-bold text-green-600">
-              ${(Number(netWorth) || 0).toFixed(2)}
-            </p>
-            <p className="text-small text-default-500">
-              Total en todas las cuentas
-            </p>
-          </CardBody>
-        </Card>
+      {/* Networth Section */}
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-2xl font-medium">
+            Tu capital neto total es{" "}
+            <span className="font-bold text-primary text-3xl">
+              {formatCurrency(Number(netWorth) || 0)}
+            </span>{" "}
+            y se distribuye así
+          </h3>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <h3 className="text-lg font-semibold">Ingresos del Mes</h3>
-          </CardHeader>
-          <CardBody className="pt-0">
-            <p className="text-2xl font-bold text-blue-600">
-              ${stats?.income.total.toFixed(2) || "0.00"}
-            </p>
-            <p className="text-small text-default-500">
-              {stats?.income.count || 0} transacciones
-            </p>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <h3 className="text-lg font-semibold">Gastos del Mes</h3>
-          </CardHeader>
-          <CardBody className="pt-0">
-            <p className="text-2xl font-bold text-red-600">
-              ${stats?.expenses.total || "0.00"}
-            </p>
-            <p className="text-small text-default-500">
-              {stats?.expenses.count || 0} transacciones
-            </p>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <h3 className="text-lg font-semibold">Balance del Mes</h3>
-          </CardHeader>
-          <CardBody className="pt-0">
-            <p
-              className={`text-2xl font-bold ${
-                (stats?.netIncome || 0) >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              ${stats?.netIncome || "0.00"}
-            </p>
-            <p className="text-small text-default-500">Ingresos - Gastos</p>
-          </CardBody>
-        </Card>
+        {/* Account Distribution Bar */}
+        <div>
+          <AccountDistributionBar accounts={accountsDistribution} />
+        </div>
       </div>
 
-      {/* Configuration Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center w-full">
-            <div>
-              <h3 className="text-lg font-semibold">
-                Configuración Financiera
-              </h3>
-              <p className="text-small text-default-500">
-                Administra tus categorías, presupuestos y cuentas
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <Divider />
-        <CardBody className="text-center py-12">
-          <div className="mb-6">
-            <span className="text-6xl">⚙️</span>
-          </div>
-          <h3 className="text-xl font-semibold mb-2">
-            Configura tu App Financiera
-          </h3>
-          <p className="text-default-500 mb-6 max-w-md mx-auto">
-            Para aprovechar al máximo NiunMango, configura tus categorías de
-            gastos, crea presupuestos y administra tus cuentas desde la página
-            de configuraciones.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              as={NextLink}
-              href="/settings"
-              color="primary"
-              size="lg"
-              className="font-medium"
-            >
-              Ir a Configuraciones
-            </Button>
-            <Button
-              as={NextLink}
-              href="/entries"
-              variant="bordered"
-              size="lg"
-              className="font-medium"
-            >
-              Ver Mis Entradas
-            </Button>
-          </div>
-        </CardBody>
-      </Card>
+      {/* Last Entries resume */}
+      <div className="space-y-6">
+        <div className="text-center text-lg">
+          <h1 className="font-bold">Entradas recientes</h1>
+        </div>
+
+        <div>
+          <RecentEntriesList entries={recentEntries} />
+        </div>
+
+        <Button
+          className="p-5 w-full"
+          color="primary"
+          variant="ghost"
+          onPress={() => router.push("/entries")}
+        >
+          <Icon icon="streamline-plump:money-cash-bill-1-solid" height={24} />
+          <span className="text-small">Ver todas</span>
+        </Button>
+      </div>
+
+      {/* Budget Details Modal */}
+      <BudgetDetailsModal
+        budget={selectedBudget}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
     </div>
   );
 }

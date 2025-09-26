@@ -5,6 +5,7 @@ const router = Router();
 
 router.get("/", budgetController.getAll);
 router.get("/current", budgetController.getCurrent);
+router.get("/active", budgetController.getActive);
 router.get("/:id", budgetController.getById);
 router.get("/:id/progress", budgetController.getProgress);
 router.post("/", budgetController.create);

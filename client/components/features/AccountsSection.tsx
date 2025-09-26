@@ -24,9 +24,11 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@heroui/modal";
+import { addToast } from "@heroui/toast";
+
 import { Plus, Trash, CreditCard } from "@/components/icons";
 import { useAccounts, AccountType } from "@/hooks/useAccounts";
-import { addToast } from "@heroui/toast";
+import { formatCurrency } from "@/lib/formatters";
 
 export function AccountsSection() {
   const {
@@ -42,12 +44,31 @@ export function AccountsSection() {
     onOpen: onNewAccountOpen,
     onOpenChange: onNewAccountOpenChange,
   } = useDisclosure();
+  const {
+    isOpen: isDeleteConfirmOpen,
+    onOpen: onDeleteConfirmOpen,
+    onOpenChange: onDeleteConfirmOpenChange,
+  } = useDisclosure();
+  const {
+    isOpen: isToggleConfirmOpen,
+    onOpen: onToggleConfirmOpen,
+    onOpenChange: onToggleConfirmOpenChange,
+  } = useDisclosure();
 
   const [newAccount, setNewAccount] = useState({
     name: "",
     type: "CHECKING" as AccountType,
     balance: "0",
   });
+  const [accountToDelete, setAccountToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [accountToToggle, setAccountToToggle] = useState<{
+    id: string;
+    name: string;
+    isActive: boolean;
+  } | null>(null);
 
   const accountTypes = [
     { key: "CHECKING", label: "Cuenta Corriente" },
@@ -77,6 +98,7 @@ export function AccountsSection() {
 
   const getAccountTypeLabel = (type: string) => {
     const accountType = accountTypes.find((t) => t.key === type);
+
     return accountType ? accountType.label : type;
   };
 
@@ -94,43 +116,77 @@ export function AccountsSection() {
       addToast({
         title: "Éxito",
         description: "Cuenta creada exitosamente.",
+        color: "success",
       });
-    } catch (error) {
+    } catch {
       addToast({
         title: "Error",
-        description: "Error al crear la cuenta.",
+        description: "No se pudo crear la cuenta.",
+        color: "danger",
       });
     }
   };
 
-  const handleDeleteAccount = async (id: string, name: string) => {
+  const confirmDeleteAccount = (id: string, name: string) => {
+    setAccountToDelete({ id, name });
+    onDeleteConfirmOpen();
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!accountToDelete) return;
+
     try {
-      await deleteAccount(id);
+      await deleteAccount(accountToDelete.id);
       addToast({
         title: "Éxito",
-        description: `Cuenta "${name}" eliminada.`,
+        description: `Cuenta "${accountToDelete.name}" eliminada exitosamente.`,
+        color: "success",
       });
-    } catch (error) {
+      setAccountToDelete(null);
+      onDeleteConfirmOpenChange();
+    } catch {
       addToast({
         title: "Error",
-        description: "Error al eliminar la cuenta.",
+        description: "No se pudo eliminar la cuenta.",
+        color: "danger",
       });
     }
   };
 
-  const handleToggleStatus = async (id: string) => {
+  const cancelDeleteAccount = () => {
+    setAccountToDelete(null);
+    onDeleteConfirmOpenChange();
+  };
+
+  const confirmToggleStatus = (id: string, name: string, isActive: boolean) => {
+    setAccountToToggle({ id, name, isActive });
+    onToggleConfirmOpen();
+  };
+
+  const handleToggleStatus = async () => {
+    if (!accountToToggle) return;
+
     try {
-      await toggleAccountStatus(id);
+      await toggleAccountStatus(accountToToggle.id);
       addToast({
         title: "Éxito",
-        description: "Estado de cuenta actualizado.",
+        description: "Estado de cuenta actualizado exitosamente.",
+        color: "success",
       });
-    } catch (error) {
+      setAccountToToggle(null);
+      onToggleConfirmOpenChange();
+    } catch {
       addToast({
         title: "Error",
-        description: "Error al actualizar el estado.",
+        description: "No se pudo actualizar el estado de la cuenta.",
+        color: "danger",
       });
     }
+  };
+
+  const cancelToggleStatus = () => {
+    setAccountToToggle(null);
+    onToggleConfirmOpenChange();
   };
 
   return (
@@ -184,8 +240,8 @@ export function AccountsSection() {
                     <TableCell>
                       <Chip
                         color={getAccountTypeColor(account.type)}
-                        variant="flat"
                         size="sm"
+                        variant="flat"
                       >
                         {getAccountTypeLabel(account.type)}
                       </Chip>
@@ -198,14 +254,14 @@ export function AccountsSection() {
                             : "text-red-600"
                         }`}
                       >
-                        ${account.balance}
+                        {formatCurrency(account.balance)}
                       </span>
                     </TableCell>
                     <TableCell>
                       <Chip
                         color={account.isActive ? "success" : "default"}
-                        variant="flat"
                         size="sm"
+                        variant="flat"
                       >
                         {account.isActive ? "Activa" : "Inactiva"}
                       </Chip>
@@ -213,20 +269,26 @@ export function AccountsSection() {
                     <TableCell>
                       <div className="flex gap-2">
                         <Button
+                          color={account.isActive ? "default" : "success"}
                           size="sm"
                           variant="flat"
-                          color={account.isActive ? "default" : "success"}
-                          onPress={() => handleToggleStatus(account.id)}
+                          onPress={() =>
+                            confirmToggleStatus(
+                              account.id,
+                              account.name,
+                              account.isActive
+                            )
+                          }
                         >
                           {account.isActive ? "Desactivar" : "Activar"}
                         </Button>
                         <Button
-                          size="sm"
                           color="danger"
-                          variant="flat"
+                          size="sm"
                           startContent={<Trash className="w-3 h-3" />}
+                          variant="flat"
                           onPress={() =>
-                            handleDeleteAccount(account.id, account.name)
+                            confirmDeleteAccount(account.id, account.name)
                           }
                         >
                           Eliminar
@@ -242,7 +304,11 @@ export function AccountsSection() {
       </Card>
 
       {/* New Account Modal */}
-      <Modal isOpen={isNewAccountOpen} onOpenChange={onNewAccountOpenChange}>
+      <Modal
+        isDismissable={false}
+        isOpen={isNewAccountOpen}
+        onOpenChange={onNewAccountOpenChange}
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -263,6 +329,7 @@ export function AccountsSection() {
                     selectedKeys={[newAccount.type]}
                     onSelectionChange={(keys) => {
                       const selected = Array.from(keys)[0] as AccountType;
+
                       setNewAccount({ ...newAccount, type: selected });
                     }}
                   >
@@ -271,15 +338,15 @@ export function AccountsSection() {
                     ))}
                   </Select>
                   <Input
-                    type="number"
                     label="Balance inicial"
                     placeholder="0.00"
+                    startContent={
+                      <span className="text-default-400 text-small">$</span>
+                    }
+                    type="number"
                     value={newAccount.balance}
                     onChange={(e) =>
                       setNewAccount({ ...newAccount, balance: e.target.value })
-                    }
-                    startContent={
-                      <span className="text-default-400 text-small">$</span>
                     }
                   />
                 </div>
@@ -290,15 +357,82 @@ export function AccountsSection() {
                 </Button>
                 <Button
                   color="primary"
-                  onPress={() => handleCreateAccount(onClose)}
-                  isLoading={isCreating}
                   isDisabled={!newAccount.name.trim()}
+                  isLoading={isCreating}
+                  onPress={() => handleCreateAccount(onClose)}
                 >
                   Crear
                 </Button>
               </ModalFooter>
             </>
           )}
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteConfirmOpen}
+        size="sm"
+        onOpenChange={onDeleteConfirmOpenChange}
+      >
+        <ModalContent>
+          <ModalHeader>
+            <span>Confirmar Eliminación</span>
+          </ModalHeader>
+          <ModalBody>
+            <p>
+              ¿Estás seguro de que deseas eliminar la cuenta &quot;
+              {accountToDelete?.name}&quot;? Esta acción no se puede deshacer.
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="default"
+              variant="light"
+              onPress={cancelDeleteAccount}
+            >
+              Cancelar
+            </Button>
+            <Button color="danger" onPress={handleDeleteAccount}>
+              Eliminar
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Toggle Status Confirmation Modal */}
+      <Modal
+        isOpen={isToggleConfirmOpen}
+        size="sm"
+        onOpenChange={onToggleConfirmOpenChange}
+      >
+        <ModalContent>
+          <ModalHeader>
+            <span>Confirmar Cambio de Estado</span>
+          </ModalHeader>
+          <ModalBody>
+            <p>
+              ¿Estás seguro de que deseas{" "}
+              {accountToToggle?.isActive ? "desactivar" : "activar"} la cuenta
+              &quot;
+              {accountToToggle?.name}&quot;?
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="default"
+              variant="light"
+              onPress={cancelToggleStatus}
+            >
+              Cancelar
+            </Button>
+            <Button
+              color={accountToToggle?.isActive ? "warning" : "success"}
+              onPress={handleToggleStatus}
+            >
+              {accountToToggle?.isActive ? "Desactivar" : "Activar"}
+            </Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </>

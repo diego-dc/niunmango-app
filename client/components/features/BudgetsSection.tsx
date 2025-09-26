@@ -17,10 +17,12 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@heroui/modal";
+import { addToast } from "@heroui/toast";
+
 import { Plus, Trash, Target } from "@/components/icons";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useCategories } from "@/hooks/useCategories";
-import { addToast } from "@heroui/toast";
+import { formatCurrency, formatPercentage } from "@/lib/formatters";
 
 export function BudgetsSection() {
   const {
@@ -42,6 +44,11 @@ export function BudgetsSection() {
     onOpen: onAddItemOpen,
     onOpenChange: onAddItemOpenChange,
   } = useDisclosure();
+  const {
+    isOpen: isDeleteConfirmOpen,
+    onOpen: onDeleteConfirmOpen,
+    onOpenChange: onDeleteConfirmOpenChange,
+  } = useDisclosure();
 
   const [newBudget, setNewBudget] = useState({
     name: "",
@@ -53,6 +60,10 @@ export function BudgetsSection() {
     budgetedAmount: "",
   });
   const [selectedBudgetId, setSelectedBudgetId] = useState("");
+  const [budgetToDelete, setBudgetToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const handleCreateBudget = async (onClose: () => void) => {
     if (!newBudget.name.trim() || !newBudget.startDate || !newBudget.endDate)
@@ -65,11 +76,13 @@ export function BudgetsSection() {
       addToast({
         title: "Éxito",
         description: "Presupuesto creado exitosamente.",
+        color: "success",
       });
-    } catch (error) {
+    } catch {
       addToast({
         title: "Error",
-        description: "Error al crear el presupuesto.",
+        description: "No se pudo crear el presupuesto.",
+        color: "danger",
       });
     }
   };
@@ -92,28 +105,46 @@ export function BudgetsSection() {
       addToast({
         title: "Éxito",
         description: "Categoría agregada al presupuesto.",
+        color: "success",
       });
-    } catch (error) {
+    } catch {
       addToast({
         title: "Error",
-        description: "Error al agregar categoría al presupuesto.",
+        description: "No se pudo agregar la categoría al presupuesto.",
+        color: "danger",
       });
     }
   };
 
-  const handleDeleteBudget = async (id: string, name: string) => {
+  const confirmDeleteBudget = (id: string, name: string) => {
+    setBudgetToDelete({ id, name });
+    onDeleteConfirmOpen();
+  };
+
+  const handleDeleteBudget = async () => {
+    if (!budgetToDelete) return;
+
     try {
-      await deleteBudget(id);
+      await deleteBudget(budgetToDelete.id);
       addToast({
         title: "Éxito",
-        description: `Presupuesto "${name}" eliminado.`,
+        description: `Presupuesto "${budgetToDelete.name}" eliminado exitosamente.`,
+        color: "success",
       });
-    } catch (error) {
+      setBudgetToDelete(null);
+      onDeleteConfirmOpenChange();
+    } catch {
       addToast({
         title: "Error",
-        description: "Error al eliminar el presupuesto.",
+        description: "No se pudo eliminar el presupuesto.",
+        color: "danger",
       });
     }
+  };
+
+  const cancelDeleteBudget = () => {
+    setBudgetToDelete(null);
+    onDeleteConfirmOpenChange();
   };
 
   return (
@@ -162,8 +193,8 @@ export function BudgetsSection() {
                       </div>
                       <div className="flex gap-2">
                         <Button
-                          size="sm"
                           color="primary"
+                          size="sm"
                           variant="flat"
                           onPress={() => {
                             setSelectedBudgetId(budget.id);
@@ -173,12 +204,12 @@ export function BudgetsSection() {
                           + Categoría
                         </Button>
                         <Button
-                          size="sm"
                           color="danger"
-                          variant="flat"
+                          size="sm"
                           startContent={<Trash className="w-3 h-3" />}
+                          variant="flat"
                           onPress={() =>
-                            handleDeleteBudget(budget.id, budget.name)
+                            confirmDeleteBudget(budget.id, budget.name)
                           }
                         >
                           Eliminar
@@ -193,15 +224,15 @@ export function BudgetsSection() {
                           Progreso Total
                         </span>
                         <span className="text-small">
-                          ${budget.totalSpent.toFixed(2)} / $
-                          {budget.totalBudgeted.toFixed(2)}
+                          {formatCurrency(budget.totalSpent)} /{" "}
+                          {formatCurrency(budget.totalBudgeted)}
                         </span>
                       </div>
                       <Progress
-                        value={budget.overallPercentage}
                         color={
                           budget.overallPercentage > 100 ? "danger" : "success"
                         }
+                        value={budget.overallPercentage}
                       />
                     </div>
                     {budget.budgetItems.length > 0 && (
@@ -216,17 +247,17 @@ export function BudgetsSection() {
                             </span>
                             <div className="flex items-center gap-2">
                               <span className="text-small">
-                                ${item.spent.toFixed(2)} / $
-                                {item.budgetedAmount.toFixed(2)}
+                                {formatCurrency(item.spent)} /{" "}
+                                {formatCurrency(item.budgetedAmount)}
                               </span>
                               <Chip
-                                size="sm"
                                 color={
                                   item.percentage > 100 ? "danger" : "success"
                                 }
+                                size="sm"
                                 variant="flat"
                               >
-                                {item.percentage.toFixed(0)}%
+                                {formatPercentage(item.percentage)}
                               </Chip>
                             </div>
                           </div>
@@ -242,7 +273,11 @@ export function BudgetsSection() {
       </Card>
 
       {/* New Budget Modal */}
-      <Modal isOpen={isNewBudgetOpen} onOpenChange={onNewBudgetOpenChange}>
+      <Modal
+        isDismissable={false}
+        isOpen={isNewBudgetOpen}
+        onOpenChange={onNewBudgetOpenChange}
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -258,16 +293,16 @@ export function BudgetsSection() {
                     }
                   />
                   <Input
-                    type="date"
                     label="Fecha de inicio"
+                    type="date"
                     value={newBudget.startDate}
                     onChange={(e) =>
                       setNewBudget({ ...newBudget, startDate: e.target.value })
                     }
                   />
                   <Input
-                    type="date"
                     label="Fecha de fin"
+                    type="date"
                     value={newBudget.endDate}
                     onChange={(e) =>
                       setNewBudget({ ...newBudget, endDate: e.target.value })
@@ -281,13 +316,13 @@ export function BudgetsSection() {
                 </Button>
                 <Button
                   color="primary"
-                  onPress={() => handleCreateBudget(onClose)}
-                  isLoading={isCreating}
                   isDisabled={
                     !newBudget.name.trim() ||
                     !newBudget.startDate ||
                     !newBudget.endDate
                   }
+                  isLoading={isCreating}
+                  onPress={() => handleCreateBudget(onClose)}
                 >
                   Crear
                 </Button>
@@ -298,7 +333,11 @@ export function BudgetsSection() {
       </Modal>
 
       {/* Add Budget Item Modal */}
-      <Modal isOpen={isAddItemOpen} onOpenChange={onAddItemOpenChange}>
+      <Modal
+        isDismissable={false}
+        isOpen={isAddItemOpen}
+        onOpenChange={onAddItemOpenChange}
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -313,6 +352,7 @@ export function BudgetsSection() {
                     }
                     onSelectionChange={(keys) => {
                       const selected = Array.from(keys)[0] as string;
+
                       setNewBudgetItem({
                         ...newBudgetItem,
                         categoryId: selected,
@@ -324,18 +364,18 @@ export function BudgetsSection() {
                     ))}
                   </Select>
                   <Input
-                    type="number"
                     label="Monto presupuestado"
                     placeholder="0.00"
+                    startContent={
+                      <span className="text-default-400 text-small">$</span>
+                    }
+                    type="number"
                     value={newBudgetItem.budgetedAmount}
                     onChange={(e) =>
                       setNewBudgetItem({
                         ...newBudgetItem,
                         budgetedAmount: e.target.value,
                       })
-                    }
-                    startContent={
-                      <span className="text-default-400 text-small">$</span>
                     }
                   />
                 </div>
@@ -346,17 +386,48 @@ export function BudgetsSection() {
                 </Button>
                 <Button
                   color="primary"
-                  onPress={() => handleAddBudgetItem(onClose)}
-                  isLoading={isCreating}
                   isDisabled={
                     !newBudgetItem.categoryId || !newBudgetItem.budgetedAmount
                   }
+                  isLoading={isCreating}
+                  onPress={() => handleAddBudgetItem(onClose)}
                 >
                   Agregar
                 </Button>
               </ModalFooter>
             </>
           )}
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteConfirmOpen}
+        size="sm"
+        onOpenChange={onDeleteConfirmOpenChange}
+      >
+        <ModalContent>
+          <ModalHeader>
+            <span>Confirmar Eliminación</span>
+          </ModalHeader>
+          <ModalBody>
+            <p>
+              ¿Estás seguro de que deseas eliminar el presupuesto &quot;
+              {budgetToDelete?.name}&quot;? Esta acción no se puede deshacer.
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="default"
+              variant="light"
+              onPress={cancelDeleteBudget}
+            >
+              Cancelar
+            </Button>
+            <Button color="danger" onPress={handleDeleteBudget}>
+              Eliminar
+            </Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </>

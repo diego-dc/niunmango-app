@@ -40,8 +40,8 @@ date          DateTime      @default(now())
 description   String
 userId        String
 user          User          @relation(fields: [userId], references: [id])
-categoryId    String
-category      Category      @relation(fields: [categoryId], references: [id])
+categoryId    String?
+category      Category?     @relation(fields: [categoryId], references: [id])
 entryAccounts EntryAccount[]
 }
 
@@ -50,6 +50,7 @@ enum EntryType {
 EXPENSE
 INCOME
 SAVINGS
+TRANSFER
 }
 
 // Model for a budget for a specific period

@@ -128,6 +128,37 @@ export const accountService = {
     return result._sum.balance || 0;
   },
 
+  async getAccountsDistributionByUserId(userId: string) {
+    const accounts = await prisma.account.findMany({
+      where: {
+        userId,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        balance: true,
+        type: true,
+      },
+      orderBy: { balance: "desc" },
+    });
+
+    const totalBalance = accounts.reduce((sum, account) => sum + account.balance.toNumber(), 0);
+
+    return accounts.map(account => {
+      const balance = account.balance.toNumber();
+      const percentage = totalBalance > 0 ? (balance / totalBalance) * 100 : 0;
+
+      return {
+        id: account.id,
+        name: account.name,
+        balance,
+        percentage: Math.round(percentage * 100) / 100,
+        type: account.type,
+      };
+    });
+  },
+
   async updateBalance(
     id: string,
     userId: string,

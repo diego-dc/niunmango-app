@@ -10,7 +10,16 @@ export const budgetController = {
       }
 
       const budgets = await budgetService.getAllByUserId(userId);
-      return res.json(budgets);
+
+      // Add progress information to each budget
+      const budgetsWithProgress = await Promise.all(
+        budgets.map(async (budget) => {
+          const progress = await budgetService.getBudgetProgressByIdAndUserId(budget.id, userId);
+          return progress || budget;
+        })
+      );
+
+      return res.json(budgetsWithProgress);
     } catch (error) {
       return res.status(500).json({ error: "Failed to fetch budgets" });
     }
@@ -51,6 +60,29 @@ export const budgetController = {
       return res.json(currentBudget);
     } catch (error) {
       return res.status(500).json({ error: "Failed to fetch current budget" });
+    }
+  },
+
+  async getActive(req: Request, res: Response) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const activeBudgets = await budgetService.getActiveByUserId(userId);
+
+      // Add progress information to each budget
+      const budgetsWithProgress = await Promise.all(
+        activeBudgets.map(async (budget) => {
+          const progress = await budgetService.getBudgetProgressByIdAndUserId(budget.id, userId);
+          return progress || budget;
+        })
+      );
+
+      return res.json(budgetsWithProgress);
+    } catch (error) {
+      return res.status(500).json({ error: "Failed to fetch active budgets" });
     }
   },
 

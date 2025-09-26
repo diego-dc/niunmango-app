@@ -38,6 +38,21 @@ export const entryController = {
     }
   },
 
+  async getRecent(req: Request, res: Response) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { limit = 5 } = req.query;
+      const recentEntries = await entryService.getRecentByUserId(userId, Number(limit));
+      return res.json(recentEntries);
+    } catch (error) {
+      return res.status(500).json({ error: "Failed to fetch recent entries" });
+    }
+  },
+
   async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -68,16 +83,9 @@ export const entryController = {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      if (
-        !type ||
-        !amount ||
-        !categoryId ||
-        !accountEntries ||
-        accountEntries.length === 0
-      ) {
+      if (!type || !accountEntries || accountEntries.length === 0) {
         return res.status(400).json({
-          error:
-            "Type, amount, categoryId, and at least one account entry are required",
+          error: "Type and at least one account entry are required",
         });
       }
 
@@ -85,21 +93,56 @@ export const entryController = {
         return res.status(400).json({ error: "Invalid entry type" });
       }
 
-      const totalAccountAmount = accountEntries.reduce(
-        (sum: number, ae: any) => sum + Number(ae.amount),
-        0
-      );
-      if (Math.abs(totalAccountAmount - Number(amount)) > 0.01) {
-        return res.status(400).json({
-          error: "Sum of account amounts must equal entry amount",
-        });
+      // Special validation for TRANSFER entries
+      if (type === "TRANSFER") {
+        if (accountEntries.length !== 2) {
+          return res.status(400).json({
+            error: "Transfer entries must have exactly 2 account entries",
+          });
+        }
+
+        const totalAccountAmount = accountEntries.reduce(
+          (sum: number, ae: any) => sum + Number(ae.amount),
+          0
+        );
+
+        if (Math.abs(totalAccountAmount) > 0.01) {
+          return res.status(400).json({
+            error: "For transfers, the sum of account amounts must be zero (one negative, one positive)",
+          });
+        }
+
+        // For transfers, the amount should be the absolute value of the transfer
+        if (!amount) {
+          return res.status(400).json({
+            error: "Amount is required for transfers",
+          });
+        }
+      } else {
+        // Standard validation for INCOME/EXPENSE
+        if (!amount || !categoryId) {
+          return res.status(400).json({
+            error: "Amount and categoryId are required for income/expense entries",
+          });
+        }
+
+        const totalAccountAmount = accountEntries.reduce(
+          (sum: number, ae: any) => sum + Number(ae.amount),
+          0
+        );
+
+        if (Math.abs(totalAccountAmount - Number(amount)) > 0.01) {
+          return res.status(400).json({
+            error: "Sum of account amounts must equal entry amount",
+          });
+        }
       }
 
       const entry = await entryService.create({
         type,
         amount: Number(amount),
         description,
-        categoryId,
+        categoryId: type === "TRANSFER" ? null : categoryId, // No category for transfers
         userId,
         date: date ? new Date(date) : new Date(),
         accountEntries: accountEntries.map((ae: any) => ({

@@ -3,7 +3,7 @@ import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import React from "react";
 
-export const entryForm = () => {
+export const EntryForm = () => {
   const [action, setAction] = React.useState<string | null>(null);
 
   return (

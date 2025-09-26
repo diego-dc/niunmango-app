@@ -8,7 +8,6 @@ import {
 } from "@heroui/navbar";
 import { Button } from "@heroui/button";
 import { Avatar } from "@heroui/avatar";
-import { Logo } from "./icons";
 import {
   Dropdown,
   DropdownTrigger,
@@ -18,9 +17,11 @@ import {
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
-import { useAuth } from "@/contexts/auth-context";
 import { usePathname } from "next/navigation";
 
+import { Logo } from "./icons";
+
+import { useAuth } from "@/contexts/auth-context";
 import { ThemeSwitch } from "@/components/theme-switch";
 
 const navItems = [
@@ -45,7 +46,7 @@ export const Navbar = () => {
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-2" href="/">
-            <Logo></Logo>
+            <Logo />
             <p className="font-bold text-inherit">NiunMango</p>
           </NextLink>
         </NavbarBrand>
@@ -78,7 +79,7 @@ export const Navbar = () => {
 
         {isLoading ? (
           <NavbarItem>
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
           </NavbarItem>
         ) : isAuthenticated && user ? (
           <NavbarItem>

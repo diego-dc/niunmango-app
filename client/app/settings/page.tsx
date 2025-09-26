@@ -1,58 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Divider } from "@heroui/divider";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
-import { Chip } from "@heroui/chip";
 import { Spinner } from "@heroui/spinner";
-import { Plus, Settings, Tag } from "@/components/icons";
-import { useCategories } from "@/hooks/useCategories";
+
+import { Settings } from "@/components/icons";
 import { useRequireAuth } from "@/hooks/useAuth";
-import { addToast } from "@heroui/toast";
-import { BudgetsSection } from "@/components/BudgetsSection";
-import { AccountsSection } from "@/components/AccountsSection";
+import { BudgetsSection } from "@/components/features/BudgetsSection";
+import { AccountsSection } from "@/components/features/AccountsSection";
+import { CategoriesSection } from "@/components/features/CategoriesSection";
 
 export default function SettingsPage() {
   const { isLoading: authLoading } = useRequireAuth();
-  const { categories, isLoading, createCategory, deleteCategory, isCreating } = useCategories();
-  const [newCategory, setNewCategory] = useState("");
 
-  const addCategory = async () => {
-    if (!newCategory.trim()) return;
-
-    try {
-      await createCategory(newCategory.trim());
-      setNewCategory("");
-      addToast({
-        title: "Éxito",
-        description: "Categoría creada exitosamente.",
-      });
-    } catch (error) {
-      addToast({
-        title: "Error",
-        description: "Error al crear la categoría.",
-      });
-    }
-  };
-
-  const removeCategory = async (categoryId: string, categoryName: string) => {
-    try {
-      await deleteCategory(categoryId);
-      addToast({
-        title: "Éxito",
-        description: `Categoría "${categoryName}" eliminada.`,
-      });
-    } catch (error) {
-      addToast({
-        title: "Error",
-        description: "Error al eliminar la categoría.",
-      });
-    }
-  };
-
-  if (authLoading || isLoading) {
+  if (authLoading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
         <Spinner size="lg" />
@@ -74,60 +33,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Categories Section */}
-      <Card>
-        <CardHeader className="flex gap-3">
-          <Tag className="w-5 h-5 text-primary" />
-          <div className="flex flex-col">
-            <p className="text-lg font-semibold">Categorías de Gastos</p>
-            <p className="text-small text-default-500">
-              Administra las categorías para organizar tus entradas
-            </p>
-          </div>
-        </CardHeader>
-        <Divider />
-        <CardBody className="space-y-4">
-          {/* Add new category */}
-          <div className="flex gap-3">
-            <Input
-              placeholder="Nueva categoría"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addCategory()}
-              className="flex-1"
-              isDisabled={isCreating}
-            />
-            <Button
-              color="primary"
-              startContent={<Plus className="w-4 h-4" />}
-              onPress={addCategory}
-              isLoading={isCreating}
-              isDisabled={!newCategory.trim()}
-            >
-              Agregar
-            </Button>
-          </div>
-
-          {/* Categories list */}
-          <div className="flex flex-wrap gap-2">
-            {categories.length === 0 ? (
-              <p className="text-default-500 text-center w-full py-4">
-                No hay categorías creadas. Agrega tu primera categoría.
-              </p>
-            ) : (
-              categories.map((category) => (
-                <Chip
-                  key={category.id}
-                  onClose={() => removeCategory(category.id, category.name)}
-                  variant="flat"
-                  color="primary"
-                >
-                  {category.name}
-                </Chip>
-              ))
-            )}
-          </div>
-        </CardBody>
-      </Card>
+      <CategoriesSection />
 
       {/* Budgets Section */}
       <BudgetsSection />

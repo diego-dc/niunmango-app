@@ -73,6 +73,25 @@ export const budgetService = {
     });
   },
 
+  async getActiveByUserId(userId: string) {
+    const now = new Date();
+    return await prisma.budget.findMany({
+      where: {
+        userId,
+        startDate: { lte: now },
+        endDate: { gte: now },
+      },
+      include: {
+        budgetItems: {
+          include: {
+            category: true,
+          },
+        },
+      },
+      orderBy: { startDate: "desc" },
+    });
+  },
+
   async create(data: CreateBudgetData) {
     return await prisma.$transaction(async (tx: any) => {
       const budget = await tx.budget.create({
