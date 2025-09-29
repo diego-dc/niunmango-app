@@ -24,6 +24,13 @@ const config = {
             primary: {
               DEFAULT: "#db7d0a",
             },
+            secondary: {
+              DEFAULT: "#a376ff",
+            },
+            danger: { DEFAULT: "#de5751" },
+            success: {
+              DEFAULT: "#00ae5c",
+            },
           },
         },
         light: {

@@ -78,7 +78,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4 flex flex-col gap-4">
+    <div className="max-w-7xl mx-auto p-2 flex flex-col gap-4">
       {/* Header */}
       <div className="flex justify-between items-center mb-8 gap-4">
         <div>
@@ -111,7 +111,6 @@ export default function DashboardPage() {
             as={NextLink}
             className="font-sm flex flex-col h-fit p-4"
             variant="ghost"
-            color="primary"
             href="/settings"
             size="lg"
           >
@@ -186,7 +185,6 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-
       <div className="grid grid-cols-3 gap-4 my-5">
         <Button
           className="h-20 flex-col"
@@ -231,7 +229,6 @@ export default function DashboardPage() {
           </h3>
         </div>
 
-        {/* Account Distribution Bar */}
         <div>
           <AccountDistributionBar accounts={accountsDistribution} />
         </div>
@@ -239,10 +236,6 @@ export default function DashboardPage() {
 
       {/* Last Entries resume */}
       <div className="space-y-6">
-        <div className="text-center text-lg">
-          <h1 className="font-bold">Entradas recientes</h1>
-        </div>
-
         <div>
           <RecentEntriesList entries={recentEntries} />
         </div>

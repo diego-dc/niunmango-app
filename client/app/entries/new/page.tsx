@@ -10,11 +10,18 @@ import { Switch } from "@heroui/switch";
 import { Divider } from "@heroui/divider";
 import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
+import { Icon } from "@iconify/react";
 
 import { useRequireAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
+import {
+  EntryType,
+  getTypeIcon,
+  getChipColor,
+  getTypeLabel
+} from "@/utils/entryHelpers";
+import { getCurrentDateString } from "@/utils/dateHelpers";
 
-type EntryType = "INCOME" | "EXPENSE" | "TRANSFER";
 type Category = { id: string; name: string };
 type Account = { id: string; name: string; type: string; balance: number };
 
@@ -37,7 +44,7 @@ export default function NewEntryPage() {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(getCurrentDateString());
   const [selectedAccountId, setSelectedAccountId] = useState("");
   const [accountEntries, setAccountEntries] = useState<AccountEntry[]>([]);
   const [multipleAccounts, setMultipleAccounts] = useState(false);
@@ -249,31 +256,6 @@ export default function NewEntryPage() {
     );
   };
 
-  const getTypeColor = () => {
-    switch (type) {
-      case "INCOME":
-        return "success";
-      case "EXPENSE":
-        return "danger";
-      case "TRANSFER":
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
-  const getTypeLabel = () => {
-    switch (type) {
-      case "INCOME":
-        return "Ingreso";
-      case "EXPENSE":
-        return "Gasto";
-      case "TRANSFER":
-        return "Transferencia";
-      default:
-        return "";
-    }
-  };
 
   if (authLoading || loadingData) {
     return (
@@ -289,8 +271,8 @@ export default function NewEntryPage() {
         <CardHeader className="flex flex-col gap-3">
           <div className="flex items-center justify-between w-full">
             <h1 className="text-2xl font-bold">Nueva Entrada</h1>
-            <Chip color={getTypeColor()} variant="flat">
-              {getTypeLabel()}
+            <Chip color={getChipColor(type)} variant="flat">
+              {getTypeLabel(type)}
             </Chip>
           </div>
         </CardHeader>
@@ -341,9 +323,24 @@ export default function NewEntryPage() {
                 }
               }}
             >
-              <SelectItem key="EXPENSE">💸 Gasto</SelectItem>
-              <SelectItem key="INCOME">💰 Ingreso</SelectItem>
-              <SelectItem key="TRANSFER">🔄 Transferencia</SelectItem>
+              <SelectItem
+                key="EXPENSE"
+                startContent={<Icon icon={getTypeIcon("EXPENSE")} width={16} />}
+              >
+                Gasto
+              </SelectItem>
+              <SelectItem
+                key="INCOME"
+                startContent={<Icon icon={getTypeIcon("INCOME")} width={16} />}
+              >
+                Ingreso
+              </SelectItem>
+              <SelectItem
+                key="TRANSFER"
+                startContent={<Icon icon={getTypeIcon("TRANSFER")} width={16} />}
+              >
+                Transferencia
+              </SelectItem>
             </Select>
 
             {/* Amount and Date */}

@@ -70,19 +70,19 @@ export function BudgetDetailsModal({
       }}
     >
       <ModalContent>
-        <ModalHeader className="flex flex-col gap-2">
-          <div className="flex justify-between items-start">
-            <h2 className="text-xl font-bold">{budget.name}</h2>
+        <ModalHeader className="flex flex-col gap-3">
+          <div className="flex flex-col items-start gap-2">
             <Chip
               size="sm"
               variant="flat"
               color={daysRemaining > 0 ? "success" : "danger"}
+              startContent={<Icon icon="heroicons:calendar" className="mr-1" />}
             >
-              <Icon icon="heroicons:calendar" className="mr-1" />
               {daysRemaining > 0
                 ? `${daysRemaining} días restantes`
                 : "Vencido"}
             </Chip>
+            <h2 className="text-xl font-bold">{budget.name}</h2>
           </div>
           <div className="flex gap-2 text-sm text-default-500">
             <span>{formatDate(budget.startDate)}</span>
@@ -93,11 +93,11 @@ export function BudgetDetailsModal({
 
         <ModalBody className="gap-6">
           {/* Overall Progress */}
-          <Card>
-            <CardHeader>
+          <div>
+            <div>
               <h3 className="text-lg font-semibold">Progreso General</h3>
-            </CardHeader>
-            <CardBody className="gap-4">
+            </div>
+            <div className="gap-4">
               <div className="flex justify-between items-center">
                 <span className="text-default-600">Progreso Total</span>
                 <span className="text-lg font-semibold">
@@ -114,7 +114,7 @@ export function BudgetDetailsModal({
 
               <div className="grid grid-cols-3 gap-4 mt-4">
                 <div className="text-center">
-                  <p className="text-sm text-default-500">Presupuestado</p>
+                  <p className="text-sm text-default-500">Presupuesto</p>
                   <p className="text-lg font-semibold text-primary">
                     {formatCurrency(budget.totalBudgeted)}
                   </p>
@@ -129,7 +129,7 @@ export function BudgetDetailsModal({
                   <p className="text-sm text-default-500">Restante</p>
                   <p
                     className={`text-lg font-semibold ${
-                      (budget.totalBudgeted - budget.totalSpent) >= 0
+                      budget.totalBudgeted - budget.totalSpent >= 0
                         ? "text-success"
                         : "text-danger"
                     }`}
@@ -138,12 +138,14 @@ export function BudgetDetailsModal({
                   </p>
                 </div>
               </div>
-            </CardBody>
-          </Card>
+            </div>
+          </div>
 
           {/* Budget Items by Category */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Desglose por Categoría</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              Desglose por Categoría
+            </h3>
             <div className="space-y-4">
               {sortedBudgetItems.map((item, index) => (
                 <Card key={item.id} className="border border-divider">
@@ -155,7 +157,9 @@ export function BudgetDetailsModal({
                           className="text-primary"
                           width={20}
                         />
-                        <span className="font-medium">{item.category.name}</span>
+                        <span className="font-medium">
+                          {item.category.name}
+                        </span>
                       </div>
                       <Chip
                         size="sm"
@@ -190,7 +194,8 @@ export function BudgetDetailsModal({
                         <p className="text-default-500">Restante</p>
                         <p
                           className={`font-medium ${
-                            (Number(item.budgetedAmount) - Number(item.spent)) >= 0
+                            Number(item.budgetedAmount) - Number(item.spent) >=
+                            0
                               ? "text-success"
                               : "text-danger"
                           }`}
@@ -220,16 +225,6 @@ export function BudgetDetailsModal({
             </div>
           )}
         </ModalBody>
-
-        <ModalFooter>
-          <Button
-            color="primary"
-            variant="light"
-            onPress={onClose}
-          >
-            Cerrar
-          </Button>
-        </ModalFooter>
       </ModalContent>
     </Modal>
   );

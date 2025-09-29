@@ -2,21 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardBody } from "@heroui/card";
 import { Button } from "@heroui/button";
-import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@heroui/table";
 import { Chip } from "@heroui/chip";
 import { Select, SelectItem } from "@heroui/select";
 import { Input } from "@heroui/input";
 import { Pagination } from "@heroui/pagination";
-import { Tooltip } from "@heroui/tooltip";
 import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
 import {
   Modal,
@@ -26,12 +16,27 @@ import {
   ModalFooter,
 } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
+import { Icon } from "@iconify/react";
 
 import { useRequireAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { formatCurrency } from "@/lib/formatters";
+import {
+  EntryType,
+  getTypeIcon,
+  getTypeColor,
+  getChipColor,
+  getTypeLabel,
+  formatAmount,
+  getAmountColor
+} from "@/utils/entryHelpers";
+import {
+  formatDateLong,
+  formatDateShort,
+  groupByDate,
+  sortGroupedDates
+} from "@/utils/dateHelpers";
 
-type EntryType = "INCOME" | "EXPENSE" | "TRANSFER";
 
 interface Entry {
   id: string;
@@ -143,7 +148,7 @@ export default function EntriesPage() {
     try {
       const data =
         await get<Array<{ id: string; name: string; type: string }>>(
-          "/accounts",
+          "/accounts"
         );
 
       setAccounts(data);
@@ -176,67 +181,6 @@ export default function EntriesPage() {
     });
   };
 
-  const getTypeColor = (type: EntryType) => {
-    switch (type) {
-      case "INCOME":
-        return "success";
-      case "EXPENSE":
-        return "danger";
-      case "TRANSFER":
-        return "primary";
-      default:
-        return "default";
-    }
-  };
-
-  const getTypeLabel = (type: EntryType) => {
-    switch (type) {
-      case "INCOME":
-        return "Ingreso";
-      case "EXPENSE":
-        return "Gasto";
-      case "TRANSFER":
-        return "Transferencia";
-      default:
-        return "";
-    }
-  };
-
-  const getTypeIcon = (type: EntryType) => {
-    switch (type) {
-      case "INCOME":
-        return "💰";
-      case "EXPENSE":
-        return "💸";
-      case "TRANSFER":
-        return "🔄";
-      default:
-        return "";
-    }
-  };
-
-  const formatAmount = (amount: number, type: EntryType) => {
-    if (type === "TRANSFER") {
-      return formatCurrency(amount); // No sign for transfers
-    }
-    const sign = type === "EXPENSE" ? "-" : "+";
-
-    return `${sign}${formatCurrency(amount).substring(1)}`; // Remove $ from formatCurrency and add our sign
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-    });
-  };
-
-  const truncateText = (text: string, maxLength: number) => {
-    return text.length > maxLength
-      ? text.substring(0, maxLength) + "..."
-      : text;
-  };
 
   const openEntryModal = (entry: Entry) => {
     setSelectedEntry(entry);
@@ -304,7 +248,7 @@ export default function EntriesPage() {
 
       const updatedEntry = await put(
         `/entries/${selectedEntry.id}`,
-        updateData,
+        updateData
       );
 
       await loadEntries(currentPage);
@@ -351,7 +295,8 @@ export default function EntriesPage() {
         <Popover>
           <PopoverTrigger>
             <Button color="default" variant="flat">
-              🔍 Filtros{" "}
+              <Icon icon="heroicons:funnel" width={16} />
+              Filtros{" "}
               {hasActiveFilters() &&
                 `(${Object.values(filters).filter(Boolean).length})`}
             </Button>
@@ -370,9 +315,24 @@ export default function EntriesPage() {
                     }))
                   }
                 >
-                  <SelectItem key="INCOME">💰 Ingresos</SelectItem>
-                  <SelectItem key="EXPENSE">💸 Gastos</SelectItem>
-                  <SelectItem key="TRANSFER">🔄 Transferencias</SelectItem>
+                  <SelectItem
+                    key="INCOME"
+                    startContent={<Icon icon={getTypeIcon("INCOME")} width={16} />}
+                  >
+                    Ingresos
+                  </SelectItem>
+                  <SelectItem
+                    key="EXPENSE"
+                    startContent={<Icon icon={getTypeIcon("EXPENSE")} width={16} />}
+                  >
+                    Gastos
+                  </SelectItem>
+                  <SelectItem
+                    key="TRANSFER"
+                    startContent={<Icon icon={getTypeIcon("TRANSFER")} width={16} />}
+                  >
+                    Transferencias
+                  </SelectItem>
                 </Select>
 
                 <Input
@@ -407,129 +367,98 @@ export default function EntriesPage() {
             variant="flat"
             onPress={clearFilters}
           >
-            🗑️ Limpiar Filtros
+            <Icon icon="heroicons:trash" width={16} />
+            Limpiar Filtros
           </Button>
         </div>
       )}
 
-      {/* Entries Table */}
-      <Card>
-        <CardBody className="p-0">
-          <Table
-            isHeaderSticky
-            aria-label="Tabla de entradas"
-            classNames={{
-              wrapper: "max-h-[600px]",
-            }}
-          >
-            <TableHeader>
-              <TableColumn>TIPO</TableColumn>
-              <TableColumn>DESCRIPCIÓN</TableColumn>
-              <TableColumn>CATEGORÍA</TableColumn>
-              <TableColumn>CUENTAS</TableColumn>
-              <TableColumn>MONTO</TableColumn>
-              <TableColumn>FECHA</TableColumn>
-              <TableColumn>ACCIONES</TableColumn>
-            </TableHeader>
-            <TableBody
-              emptyContent="No se encontraron entradas"
-              isLoading={loading}
-              items={entries}
-            >
-              {(entry) => (
-                <TableRow
-                  key={entry.id}
-                  className="cursor-pointer hover:bg-default-100"
-                  onClick={() => openEntryModal(entry)}
-                >
-                  <TableCell>
-                    <Chip
-                      color={getTypeColor(entry.type)}
-                      size="sm"
-                      startContent={<span>{getTypeIcon(entry.type)}</span>}
-                      variant="flat"
-                    >
-                      {getTypeLabel(entry.type)}
-                    </Chip>
-                  </TableCell>
+      {/* Entries List */}
 
-                  <TableCell>
-                    <div>
-                      <p className="font-medium" title={entry.description}>
-                        {truncateText(entry.description, 10)}
-                      </p>
-                    </div>
-                  </TableCell>
+      <div>
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </div>
+        ) : entries.length === 0 ? (
+          <div className="text-center py-8">
+            <Icon
+              icon="heroicons:document-text"
+              className="mx-auto text-default-300 mb-3"
+              width={48}
+            />
+            <p className="text-default-500">No se encontraron entradas</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Group entries by date but maintain chronological order within groups */}
+            {sortGroupedDates(groupByDate(entries, (entry) => entry.date))
+              .map(([dateKey, dayEntries]) => (
+                <div key={dateKey} className="space-y-3">
+                  {/* Date Header */}
+                  <div className="flex items-center gap-3">
+                    <h4 className="text-sm font-medium text-default-600 capitalize">
+                      {formatDateLong(dayEntries[0].date)}
+                    </h4>
+                    <div className="flex-1 h-px bg-divider" />
+                  </div>
 
-                  <TableCell>
-                    <Chip size="sm" variant="bordered">
-                      {entry.category?.name || "Sin categoría"}
-                    </Chip>
-                  </TableCell>
+                  {/* Entries for this date - sorted by creation time */}
+                  <div className="space-y-2">
+                    {dayEntries
+                      .sort((a, b) => {
+                        return new Date(b.date).getTime() - new Date(a.date).getTime();
+                      })
+                      .map((entry) => (
+                        <div
+                          key={entry.id}
+                          className={`
+                          flex items-center gap-3 p-3 rounded-lg border cursor-pointer
+                          ${getTypeColor(entry.type)}
+                          hover:scale-[1.01] transition-transform
+                        `}
+                          onClick={() => openEntryModal(entry)}
+                        >
+                          {/* Type Icon */}
+                          <div className="flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-current/10 flex items-center justify-center">
+                              <Icon
+                                icon={getTypeIcon(entry.type)}
+                                width={16}
+                                className="text-current"
+                              />
+                            </div>
+                          </div>
 
-                  <TableCell>
-                    <div className="space-y-1">
-                      {entry.entryAccounts.map((entryAccount, idx) => (
-                        <Tooltip key={idx} content={`$${entryAccount.amount}`}>
-                          <Chip color="secondary" size="sm" variant="flat">
-                            {entryAccount.account.name}
-                          </Chip>
-                        </Tooltip>
+                          {/* Entry Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium truncate">
+                                {entry.category?.name || "Sin categoría"}
+                              </p>
+                              {entry.description &&
+                                entry.description.trim() !== "" && (
+                                  <p className="text-xs text-current/70 truncate">
+                                    - {entry.description}
+                                  </p>
+                                )}
+                            </div>
+                          </div>
+
+                          {/* Amount */}
+                          <div className="flex-shrink-0">
+                            <p className="text-sm font-semibold">
+                              {formatAmount(entry.amount, entry.type)}
+                            </p>
+                          </div>
+                        </div>
                       ))}
-                    </div>
-                  </TableCell>
-
-                  <TableCell>
-                    <span
-                      className={`font-bold ${
-                        entry.type === "EXPENSE"
-                          ? "text-red-600"
-                          : entry.type === "INCOME"
-                            ? "text-green-600"
-                            : "text-blue-600"
-                      }`}
-                    >
-                      {formatAmount(entry.amount, entry.type)}
-                    </span>
-                  </TableCell>
-
-                  <TableCell>
-                    <span className="text-small text-default-500">
-                      {formatDate(entry.date)}
-                    </span>
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button
-                        color="primary"
-                        size="sm"
-                        variant="flat"
-                        onPress={() => {
-                          openEntryModal(entry);
-                          setIsEditMode(true);
-                        }}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        color="danger"
-                        size="sm"
-                        variant="flat"
-                        onPress={() => {
-                          confirmDelete(entry.id);
-                        }}
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardBody>
-      </Card>
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
 
       {/* Pagination */}
       {pages > 1 && (
@@ -556,7 +485,6 @@ export default function EntriesPage() {
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <span>{selectedEntry && getTypeIcon(selectedEntry.type)}</span>
               <span>Detalles de la Entrada</span>
             </div>
           </ModalHeader>
@@ -570,10 +498,14 @@ export default function EntriesPage() {
                       <div>
                         <p className="text-sm text-default-500">Tipo</p>
                         <Chip
-                          color={getTypeColor(selectedEntry.type)}
+                          color={getChipColor(selectedEntry.type)}
                           size="sm"
                           startContent={
-                            <span>{getTypeIcon(selectedEntry.type)}</span>
+                            <Icon
+                              icon={getTypeIcon(selectedEntry.type)}
+                              width={16}
+                              className="mx-1x"
+                            />
                           }
                           variant="flat"
                         >
@@ -583,7 +515,7 @@ export default function EntriesPage() {
                       <div>
                         <p className="text-sm text-default-500">Fecha</p>
                         <p className="font-medium">
-                          {formatDate(selectedEntry.date)}
+                          {formatDateShort(selectedEntry.date)}
                         </p>
                       </div>
                     </div>
@@ -603,13 +535,7 @@ export default function EntriesPage() {
                     <div>
                       <p className="text-sm text-default-500">Monto Total</p>
                       <p
-                        className={`text-xl font-bold ${
-                          selectedEntry.type === "EXPENSE"
-                            ? "text-red-600"
-                            : selectedEntry.type === "INCOME"
-                              ? "text-green-600"
-                              : "text-blue-600"
-                        }`}
+                        className={`text-xl font-bold ${getAmountColor(selectedEntry.type)}`}
                       >
                         {formatAmount(selectedEntry.amount, selectedEntry.type)}
                       </p>
@@ -638,7 +564,7 @@ export default function EntriesPage() {
                                 {formatCurrency(entryAccount.amount)}
                               </p>
                             </div>
-                          ),
+                          )
                         )}
                       </div>
                     </div>
@@ -658,10 +584,23 @@ export default function EntriesPage() {
                           }))
                         }
                       >
-                        <SelectItem key="INCOME">💰 Ingresos</SelectItem>
-                        <SelectItem key="EXPENSE">💸 Gastos</SelectItem>
-                        <SelectItem key="TRANSFER">
-                          🔄 Transferencias
+                        <SelectItem
+                          key="INCOME"
+                          startContent={<Icon icon={getTypeIcon("INCOME")} width={16} />}
+                        >
+                          Ingresos
+                        </SelectItem>
+                        <SelectItem
+                          key="EXPENSE"
+                          startContent={<Icon icon={getTypeIcon("EXPENSE")} width={16} />}
+                        >
+                          Gastos
+                        </SelectItem>
+                        <SelectItem
+                          key="TRANSFER"
+                          startContent={<Icon icon={getTypeIcon("TRANSFER")} width={16} />}
+                        >
+                          Transferencias
                         </SelectItem>
                       </Select>
 

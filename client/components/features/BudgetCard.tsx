@@ -6,6 +6,7 @@ import { Chip } from "@heroui/chip";
 import { Icon } from "@iconify/react";
 import { formatCurrency } from "@/lib/formatters";
 import { Budget } from "@/hooks/useBudgets";
+import { truncateText } from "@/utils/text";
 
 interface BudgetCardProps {
   budget: Budget;
@@ -22,10 +23,10 @@ export function BudgetCard({ budget, onClick }: BudgetCardProps) {
   const formatDateRange = (startDate: string, endDate: string) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const startMonth = start.toLocaleDateString("es-ES", { month: "short" });
-    const endMonth = end.toLocaleDateString("es-ES", { month: "short" });
+    const startMonth = start.toLocaleDateString("es-ES", { month: "numeric" });
+    const endMonth = end.toLocaleDateString("es-ES", { month: "numeric" });
 
-    return `${startMonth} ${start.getDate()} - ${endMonth} ${end.getDate()}`;
+    return `${startMonth} / ${start.getDate()} - ${endMonth} / ${end.getDate()}`;
   };
 
   return (
@@ -35,12 +36,18 @@ export function BudgetCard({ budget, onClick }: BudgetCardProps) {
       onPress={onClick}
     >
       <CardHeader className="flex flex-col items-start gap-2 p-4">
-        <div className="flex justify-between items-start w-full">
-          <h3 className="text-lg font-semibold">{budget.name}</h3>
-          <Chip size="sm" variant="flat" color="primary">
-            <Icon icon="heroicons:calendar" className="mr-1" />
+        <div className="flex flex-col items-start w-full gap-3">
+          <Chip
+            size="sm"
+            variant="bordered"
+            color="primary"
+            startContent={<Icon icon="majesticons:calendar" className="mr-1" />}
+          >
             {formatDateRange(budget.startDate, budget.endDate)}
           </Chip>
+          <h3 className="text-lg font-semibold text-start">
+            {truncateText(budget.name, 25)}
+          </h3>
         </div>
       </CardHeader>
 
@@ -78,7 +85,7 @@ export function BudgetCard({ budget, onClick }: BudgetCardProps) {
             <span className="text-xs text-default-500">Restante</span>
             <span
               className={`text-sm font-medium ${
-                (budget.totalBudgeted - budget.totalSpent) >= 0
+                budget.totalBudgeted - budget.totalSpent >= 0
                   ? "text-success"
                   : "text-danger"
               }`}
@@ -91,8 +98,11 @@ export function BudgetCard({ budget, onClick }: BudgetCardProps) {
 
       <CardFooter className="p-4 pt-0">
         <div className="flex justify-between items-center w-full">
-          <Chip size="sm" variant="flat">
-            <Icon icon="heroicons:folder" className="mr-1" />
+          <Chip
+            size="sm"
+            variant="flat"
+            startContent={<Icon icon="heroicons:folder" className="mr-1" />}
+          >
             {budget.budgetItems.length} categorías
           </Chip>
           <Icon

@@ -11,7 +11,10 @@ interface BudgetCarouselProps {
   onBudgetClick: (budget: Budget) => void;
 }
 
-export function BudgetCarousel({ budgets, onBudgetClick }: BudgetCarouselProps) {
+export function BudgetCarousel({
+  budgets,
+  onBudgetClick,
+}: BudgetCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -132,31 +135,6 @@ export function BudgetCarousel({ budgets, onBudgetClick }: BudgetCarouselProps) 
 
   return (
     <div className="relative">
-      {/* Navigation Buttons */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Presupuestos Activos</h2>
-        <div className="flex gap-2">
-          <Button
-            isIconOnly
-            variant="flat"
-            size="sm"
-            onPress={handlePrevious}
-            isDisabled={currentIndex === 0}
-          >
-            <Icon icon="heroicons:chevron-left" width={16} />
-          </Button>
-          <Button
-            isIconOnly
-            variant="flat"
-            size="sm"
-            onPress={handleNext}
-            isDisabled={currentIndex >= maxIndex}
-          >
-            <Icon icon="heroicons:chevron-right" width={16} />
-          </Button>
-        </div>
-      </div>
-
       {/* Carousel Container */}
       <div
         ref={containerRef}
@@ -175,10 +153,7 @@ export function BudgetCarousel({ budgets, onBudgetClick }: BudgetCarouselProps) 
       >
         {budgets.map((budget, index) => (
           <div key={budget.id} className="flex-shrink-0 snap-start">
-            <BudgetCard
-              budget={budget}
-              onClick={() => onBudgetClick(budget)}
-            />
+            <BudgetCard budget={budget} onClick={() => onBudgetClick(budget)} />
           </div>
         ))}
       </div>

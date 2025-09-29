@@ -20,14 +20,13 @@ export function AccountDistributionBar({
   // Colors for different account types, inspired by iOS storage colors
   const getColorForAccount = (index: number, type: string) => {
     const colors = [
-      { bg: "bg-blue-500", text: "text-blue-50" }, // Primary blue
-      { bg: "bg-green-500", text: "text-green-50" }, // Success green
+      { bg: "bg-primary", text: "text-white" }, // Primary
+      { bg: "bg-secondary", text: "text-white" }, // Success green
+      { bg: "bg-indigo-500", text: "text-indigo-50" }, // Indigo
       { bg: "bg-purple-500", text: "text-purple-50" }, // Purple
       { bg: "bg-orange-500", text: "text-orange-50" }, // Warning orange
       { bg: "bg-pink-500", text: "text-pink-50" }, // Pink
-      { bg: "bg-indigo-500", text: "text-indigo-50" }, // Indigo
       { bg: "bg-teal-500", text: "text-teal-50" }, // Teal
-      { bg: "bg-red-500", text: "text-red-50" }, // Danger red
     ];
 
     return colors[index % colors.length];
@@ -75,7 +74,7 @@ export function AccountDistributionBar({
       </div>
 
       {/* Legend */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {visibleAccounts.map((account, index) => {
           const color = getColorForAccount(index, account.type);
 
