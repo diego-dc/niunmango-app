@@ -55,14 +55,14 @@ export function CategoriesSection() {
 
   return (
     <Card>
-      <CardHeader className="flex gap-3">
-        <Tag className="w-5 h-5 text-primary" />
-        <div className="flex flex-col">
+      <CardHeader className="flex flex-col gap-3">
+        <div className="flex gap-2 w-full justify-start items-center">
+          <Tag className="w-5 h-5 text-primary" />
           <p className="text-lg font-semibold">Categorías de Gastos</p>
-          <p className="text-small text-default-500">
-            Administra las categorías para organizar tus entradas
-          </p>
         </div>
+        <p className="text-small text-default-500">
+          Administra las categorías para organizar tus entradas
+        </p>
       </CardHeader>
       <Divider />
       <CardBody className="space-y-4">
@@ -98,7 +98,6 @@ export function CategoriesSection() {
               <Chip
                 key={category.id}
                 color="primary"
-                variant="flat"
                 onClose={() => removeCategory(category.id, category.name)}
               >
                 {category.name}

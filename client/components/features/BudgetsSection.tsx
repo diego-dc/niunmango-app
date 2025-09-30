@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { Button } from "@heroui/button";
@@ -9,6 +9,8 @@ import { Chip } from "@heroui/chip";
 import { Spinner } from "@heroui/spinner";
 import { Progress } from "@heroui/progress";
 import { Select, SelectItem } from "@heroui/select";
+import { Accordion, AccordionItem } from "@heroui/accordion";
+import { Pagination } from "@heroui/pagination";
 import {
   Modal,
   ModalContent,
@@ -19,7 +21,7 @@ import {
 } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
 
-import { Plus, Trash, Target } from "@/components/icons";
+import { Plus, Trash, Target, Edit3 } from "@/components/icons";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useCategories } from "@/hooks/useCategories";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
@@ -30,6 +32,7 @@ export function BudgetsSection() {
     createBudget,
     deleteBudget,
     addBudgetItem,
+    updateBudgetItem,
     isLoading,
     isCreating,
   } = useBudgets();
@@ -49,6 +52,11 @@ export function BudgetsSection() {
     onOpen: onDeleteConfirmOpen,
     onOpenChange: onDeleteConfirmOpenChange,
   } = useDisclosure();
+  const {
+    isOpen: isEditItemOpen,
+    onOpen: onEditItemOpen,
+    onOpenChange: onEditItemOpenChange,
+  } = useDisclosure();
 
   const [newBudget, setNewBudget] = useState({
     name: "",
@@ -64,6 +72,15 @@ export function BudgetsSection() {
     id: string;
     name: string;
   } | null>(null);
+  const [editingItem, setEditingItem] = useState<{
+    id: string;
+    budgetId: string;
+    categoryName: string;
+    currentAmount: number;
+  } | null>(null);
+  const [editAmount, setEditAmount] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const budgetsPerPage = 5;
 
   const handleCreateBudget = async (onClose: () => void) => {
     if (!newBudget.name.trim() || !newBudget.startDate || !newBudget.endDate)
@@ -147,19 +164,73 @@ export function BudgetsSection() {
     onDeleteConfirmOpenChange();
   };
 
+  const handleEditBudgetItem = (item: any, budgetId: string) => {
+    setEditingItem({
+      id: item.id,
+      budgetId,
+      categoryName: item.category.name,
+      currentAmount: item.budgetedAmount,
+    });
+    setEditAmount(item.budgetedAmount.toString());
+    onEditItemOpen();
+  };
+
+  const handleUpdateBudgetItem = async (onClose: () => void) => {
+    if (!editingItem || !editAmount) return;
+
+    try {
+      await updateBudgetItem(editingItem.budgetId, editingItem.id, {
+        budgetedAmount: parseFloat(editAmount),
+      });
+      setEditingItem(null);
+      setEditAmount("");
+      onClose();
+      addToast({
+        title: "Éxito",
+        description: "Monto actualizado exitosamente.",
+        color: "success",
+      });
+    } catch {
+      addToast({
+        title: "Error",
+        description: "No se pudo actualizar el monto.",
+        color: "danger",
+      });
+    }
+  };
+
+  const cancelEditItem = () => {
+    setEditingItem(null);
+    setEditAmount("");
+    onEditItemOpenChange();
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(budgets.length / budgetsPerPage);
+  const startIndex = (currentPage - 1) * budgetsPerPage;
+  const endIndex = startIndex + budgetsPerPage;
+  const currentBudgets = budgets.slice(startIndex, endIndex);
+
+  // Reset to first page when budgets change
+  React.useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [budgets.length, currentPage, totalPages]);
+
   return (
     <>
       <Card>
-        <CardHeader className="flex gap-3">
-          <Target className="w-5 h-5 text-success" />
-          <div className="flex flex-col flex-1">
+        <CardHeader className="flex flex-col gap-3 justify-start">
+          <div className="flex gap-2 w-full items-center justify-start">
+            <Target className="w-5 h-5 text-primary" />
             <p className="text-lg font-semibold">Presupuestos</p>
-            <p className="text-small text-default-500">
-              Configura y administra tus presupuestos mensuales
-            </p>
           </div>
+          <p className="text-small text-default-500">
+            Configura y administra tus presupuestos mensuales
+          </p>
           <Button
-            color="success"
+            color="primary"
             startContent={<Plus className="w-4 h-4" />}
             onPress={onNewBudgetOpen}
           >
@@ -180,44 +251,46 @@ export function BudgetsSection() {
             </div>
           ) : (
             <div className="space-y-4">
-              {budgets.map((budget) => (
-                <Card key={budget.id} className="border">
-                  <CardHeader>
-                    <div className="flex justify-between items-center w-full">
-                      <div>
-                        <h4 className="font-semibold">{budget.name}</h4>
-                        <p className="text-small text-default-500">
-                          {new Date(budget.startDate).toLocaleDateString()} -{" "}
-                          {new Date(budget.endDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          color="primary"
-                          size="sm"
-                          variant="flat"
-                          onPress={() => {
-                            setSelectedBudgetId(budget.id);
-                            onAddItemOpen();
-                          }}
-                        >
-                          + Categoría
-                        </Button>
-                        <Button
-                          color="danger"
-                          size="sm"
-                          startContent={<Trash className="w-3 h-3" />}
-                          variant="flat"
-                          onPress={() =>
-                            confirmDeleteBudget(budget.id, budget.name)
-                          }
-                        >
-                          Eliminar
-                        </Button>
-                      </div>
+              <Accordion variant="splitted">
+                {currentBudgets.map((budget) => (
+                <AccordionItem
+                  key={budget.id}
+                  title={
+                    <div className="flex flex-col items-start">
+                      <h4 className="font-semibold">{budget.name}</h4>
+                      <p className="text-small text-default-500">
+                        {new Date(budget.startDate).toLocaleDateString()} -{" "}
+                        {new Date(budget.endDate).toLocaleDateString()}
+                      </p>
                     </div>
-                  </CardHeader>
-                  <CardBody>
+                  }
+                >
+                  <div className="space-y-4">
+                    <div className="flex gap-2 justify-center">
+                      <Button
+                        color="secondary"
+                        size="sm"
+                        variant="flat"
+                        onPress={() => {
+                          setSelectedBudgetId(budget.id);
+                          onAddItemOpen();
+                        }}
+                      >
+                        + Categoría
+                      </Button>
+                      <Button
+                        color="danger"
+                        size="sm"
+                        startContent={<Trash className="w-3 h-3" />}
+                        variant="flat"
+                        onPress={() =>
+                          confirmDeleteBudget(budget.id, budget.name)
+                        }
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+
                     <div className="mb-4">
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-small font-medium">
@@ -235,6 +308,7 @@ export function BudgetsSection() {
                         value={budget.overallPercentage}
                       />
                     </div>
+
                     {budget.budgetItems.length > 0 && (
                       <div className="space-y-2">
                         {budget.budgetItems.map((item) => (
@@ -259,14 +333,36 @@ export function BudgetsSection() {
                               >
                                 {formatPercentage(item.percentage)}
                               </Chip>
+                              <Button
+                                isIconOnly
+                                size="sm"
+                                variant="light"
+                                onPress={() => handleEditBudgetItem(item, budget.id)}
+                              >
+                                <Edit3 className="w-3 h-3" />
+                              </Button>
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
-                  </CardBody>
-                </Card>
-              ))}
+                  </div>
+                </AccordionItem>
+                ))}
+              </Accordion>
+
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-4">
+                  <Pagination
+                    total={totalPages}
+                    page={currentPage}
+                    onChange={setCurrentPage}
+                    showControls
+                    showShadow
+                    color="primary"
+                  />
+                </div>
+              )}
             </div>
           )}
         </CardBody>
@@ -393,6 +489,52 @@ export function BudgetsSection() {
                   onPress={() => handleAddBudgetItem(onClose)}
                 >
                   Agregar
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      {/* Edit Budget Item Modal */}
+      <Modal
+        isDismissable={false}
+        isOpen={isEditItemOpen}
+        onOpenChange={onEditItemOpenChange}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>Editar Monto de Categoría</ModalHeader>
+              <ModalBody>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-small text-default-500 mb-2">Categoría:</p>
+                    <p className="font-medium">{editingItem?.categoryName}</p>
+                  </div>
+                  <Input
+                    label="Nuevo monto presupuestado"
+                    placeholder="0.00"
+                    startContent={
+                      <span className="text-default-400 text-small">$</span>
+                    }
+                    type="number"
+                    value={editAmount}
+                    onChange={(e) => setEditAmount(e.target.value)}
+                  />
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="light" onPress={cancelEditItem}>
+                  Cancelar
+                </Button>
+                <Button
+                  color="primary"
+                  isDisabled={!editAmount || parseFloat(editAmount) <= 0}
+                  isLoading={isCreating}
+                  onPress={() => handleUpdateBudgetItem(onClose)}
+                >
+                  Actualizar
                 </Button>
               </ModalFooter>
             </>

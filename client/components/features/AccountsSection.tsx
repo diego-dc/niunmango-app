@@ -26,9 +26,10 @@ import {
 } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
 
-import { Plus, Trash, CreditCard } from "@/components/icons";
+import { Plus, Trash } from "@/components/icons";
 import { useAccounts, AccountType } from "@/hooks/useAccounts";
 import { formatCurrency } from "@/lib/formatters";
+import { Icon } from "@iconify/react";
 
 export function AccountsSection() {
   const {
@@ -192,16 +193,19 @@ export function AccountsSection() {
   return (
     <>
       <Card>
-        <CardHeader className="flex gap-3">
-          <CreditCard className="w-5 h-5 text-warning" />
-          <div className="flex flex-col flex-1">
+        <CardHeader className="flex flex-col gap-3">
+          <div className="flex gap-2 items-center justify-start w-full">
+            <Icon
+              icon="majesticons:creditcard"
+              className="w-5 h-5 text-primary"
+            />
             <p className="text-lg font-semibold">Cuentas y Fondos</p>
-            <p className="text-small text-default-500">
-              Administra tus cuentas bancarias, tarjetas y fondos
-            </p>
           </div>
+          <p className="text-small text-default-500">
+            Administra tus cuentas bancarias, tarjetas y fondos
+          </p>
           <Button
-            color="warning"
+            color="primary"
             startContent={<Plus className="w-4 h-4" />}
             onPress={onNewAccountOpen}
           >
@@ -216,7 +220,10 @@ export function AccountsSection() {
             </div>
           ) : accounts.length === 0 ? (
             <div className="text-center py-8 text-default-500">
-              <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <Icon
+                icon="majesticons:creditcard"
+                className="w-5 h-5 text-primary"
+              />
               <p className="text-lg mb-2">Sin cuentas</p>
               <p>
                 Agrega tu primera cuenta para empezar a gestionar tus finanzas
@@ -241,7 +248,7 @@ export function AccountsSection() {
                       <Chip
                         color={getAccountTypeColor(account.type)}
                         size="sm"
-                        variant="flat"
+                        variant="bordered"
                       >
                         {getAccountTypeLabel(account.type)}
                       </Chip>

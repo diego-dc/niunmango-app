@@ -20,7 +20,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl p-6 space-y-6">
+    <div className="container mx-auto max-w-4xl p-2 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <Settings className="w-8 h-8 text-primary" />
