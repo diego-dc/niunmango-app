@@ -21,9 +21,9 @@ import {
 } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
 
-import { Plus, Trash, Target, Edit3 } from "@/components/icons";
+import { Plus, Trash, Target, Edit3, PiggyBank } from "@/components/icons";
 import { useBudgets } from "@/hooks/useBudgets";
-import { useCategories } from "@/hooks/useCategories";
+import { useCategories } from "@/context/CategoryContext";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 
 export function BudgetsSection() {
@@ -311,39 +311,58 @@ export function BudgetsSection() {
 
                     {budget.budgetItems.length > 0 && (
                       <div className="space-y-2">
-                        {budget.budgetItems.map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex justify-between items-center p-2 bg-default-50 rounded"
-                          >
-                            <span className="font-medium">
-                              {item.category.name}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-small">
-                                {formatCurrency(item.spent)} /{" "}
-                                {formatCurrency(item.budgetedAmount)}
-                              </span>
-                              <Chip
-                                color={
-                                  item.percentage > 100 ? "danger" : "success"
-                                }
-                                size="sm"
-                                variant="flat"
-                              >
-                                {formatPercentage(item.percentage)}
-                              </Chip>
-                              <Button
-                                isIconOnly
-                                size="sm"
-                                variant="light"
-                                onPress={() => handleEditBudgetItem(item, budget.id)}
-                              >
-                                <Edit3 className="w-3 h-3" />
-                              </Button>
+                        {budget.budgetItems.map((item) => {
+                          const isSavingsCategory = item.category.name === "Ahorro";
+
+                          return (
+                            <div
+                              key={item.id}
+                              className={`flex justify-between items-center p-2 rounded ${
+                                isSavingsCategory
+                                  ? "bg-success-50 border border-success-200"
+                                  : "bg-default-50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                {isSavingsCategory && (
+                                  <PiggyBank className="w-4 h-4 text-success-600" />
+                                )}
+                                <span className={`font-medium ${
+                                  isSavingsCategory ? "text-success-700" : ""
+                                }`}>
+                                  {item.category.name}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-small">
+                                  {formatCurrency(item.spent)} /{" "}
+                                  {formatCurrency(item.budgetedAmount)}
+                                </span>
+                                <Chip
+                                  color={
+                                    isSavingsCategory
+                                      ? "success"
+                                      : item.percentage > 100
+                                      ? "danger"
+                                      : "success"
+                                  }
+                                  size="sm"
+                                  variant="flat"
+                                >
+                                  {formatPercentage(item.percentage)}
+                                </Chip>
+                                <Button
+                                  isIconOnly
+                                  size="sm"
+                                  variant="light"
+                                  onPress={() => handleEditBudgetItem(item, budget.id)}
+                                >
+                                  <Edit3 className="w-3 h-3" />
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>

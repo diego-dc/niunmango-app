@@ -9,6 +9,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 interface ApiRequestOptions extends RequestInit {
   authenticated?: boolean;
+  silentError?: boolean; // Don't show toast for errors
 }
 
 export function useApi() {
@@ -19,7 +20,7 @@ export function useApi() {
       endpoint: string,
       options: ApiRequestOptions = {},
     ): Promise<T> => {
-      const { authenticated = true, ...fetchOptions } = options;
+      const { authenticated = true, silentError = false, ...fetchOptions } = options;
 
       setLoading(true);
 
@@ -42,12 +43,15 @@ export function useApi() {
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
 
-          addToast({
-            title: "Error en la solicitud",
-            description:
-              error.error || "Error del servidor. Intenta de nuevo más tarde.",
-            color: "danger",
-          });
+          // Only show toast if not silent error
+          if (!silentError) {
+            addToast({
+              title: "Error en la solicitud",
+              description:
+                error.error || "Error del servidor. Intenta de nuevo más tarde.",
+              color: "danger",
+            });
+          }
           throw new Error(error.error || `HTTP ${response.status}`);
         }
 

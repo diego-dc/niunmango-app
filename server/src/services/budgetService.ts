@@ -204,30 +204,59 @@ export const budgetService = {
 
     const budgetItemsWithProgress = await Promise.all(
       budget.budgetItems.map(async (item: any) => {
-        const spentResult = await prisma.entry.aggregate({
-          where: {
-            userId,
-            categoryId: item.categoryId,
-            type: "EXPENSE",
-            date: {
-              gte: budget.startDate,
-              lte: budget.endDate,
-            },
-          },
-          _sum: {
-            amount: true,
-          },
+        // Check if this is the savings category
+        const category = await prisma.category.findUnique({
+          where: { id: item.categoryId }
         });
 
-        const spent = spentResult._sum.amount || 0;
-        const remaining = Number(item.budgetedAmount) - Number(spent);
+        let spent: number;
+
+        if (category?.name === "Ahorro") {
+          // For savings category: spent = sum of transfers to SAVINGS accounts
+          const savingsEntries = await prisma.entry.findMany({
+            where: {
+              userId,
+              categoryId: item.categoryId,
+              type: "TRANSFER",
+              date: {
+                gte: budget.startDate,
+                lte: budget.endDate,
+              },
+            },
+            select: {
+              amount: true,
+            },
+          });
+
+          spent = savingsEntries.reduce((sum, entry) => sum + Number(entry.amount), 0);
+        } else {
+          // For regular categories: spent = sum of expenses in that category
+          const spentResult = await prisma.entry.aggregate({
+            where: {
+              userId,
+              categoryId: item.categoryId,
+              type: "EXPENSE",
+              date: {
+                gte: budget.startDate,
+                lte: budget.endDate,
+              },
+            },
+            _sum: {
+              amount: true,
+            },
+          });
+          spent = Number(spentResult._sum.amount || 0);
+        }
+
+        const remaining = Number(item.budgetedAmount) - spent;
         const percentage =
           Number(item.budgetedAmount) > 0
-            ? (Number(spent) / Number(item.budgetedAmount)) * 100
+            ? (spent / Number(item.budgetedAmount)) * 100
             : 0;
 
         return {
           ...item,
+          category,
           spent,
           remaining,
           percentage: Math.round(percentage * 100) / 100,

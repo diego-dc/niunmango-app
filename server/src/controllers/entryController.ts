@@ -142,7 +142,7 @@ export const entryController = {
         type,
         amount: Number(amount),
         description,
-        categoryId: type === "TRANSFER" ? null : categoryId, // No category for transfers
+        categoryId: categoryId || null, // Pass categoryId as-is, let service handle it
         userId,
         date: date ? new Date(date) : new Date(),
         accountEntries: accountEntries.map((ae: any) => ({

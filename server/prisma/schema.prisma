@@ -43,13 +43,14 @@ user          User          @relation(fields: [userId], references: [id])
 categoryId    String?
 category      Category?     @relation(fields: [categoryId], references: [id])
 entryAccounts EntryAccount[]
+createdAt     DateTime      @default(now())
+updatedAt     DateTime      @updatedAt
 }
 
 // Enum for entry types
 enum EntryType {
 EXPENSE
 INCOME
-SAVINGS
 TRANSFER
 }
 
@@ -78,28 +79,30 @@ budgetedAmount  Decimal
 
 // Model for different accounts/funds (savings, credit cards, cash, etc.)
 model Account {
-id          String    @id @default(uuid())
-name        String
-type        AccountType
-userId      String
-user        User      @relation(fields: [userId], references: [id])
-balance     Decimal   @default(0)
-isActive    Boolean   @default(true)
-createdAt   DateTime  @default(now())
-updatedAt   DateTime  @updatedAt
-entryAccounts EntryAccount[]
+id                String    @id @default(uuid())
+name              String
+type              AccountType
+userId            String
+user              User      @relation(fields: [userId], references: [id])
+balance           Decimal   @default(0)
+isActive          Boolean   @default(true)
+isSavingsAccount  Boolean   @default(false)
+createdAt         DateTime  @default(now())
+updatedAt         DateTime  @updatedAt
+entryAccounts     EntryAccount[]
 
 @@unique([name, userId])
 }
 
 // Enum for account types
 enum AccountType {
-SAVINGS
 CHECKING
-CREDIT_CARD
-CASH
+CUENTA_RUT
+CUENTA_VISTA
+BILLETERA_DIGITAL
+SAVINGS
 INVESTMENT
-OTHER
+CASH
 }
 
 // Junction table for entries and accounts (many-to-many relationship)

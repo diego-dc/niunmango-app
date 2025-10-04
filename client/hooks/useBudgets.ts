@@ -20,7 +20,13 @@ export type BudgetItem = {
   budgetId: string;
   categoryId: string;
   budgetedAmount: number;
-  category: { name: string };
+  category: {
+    id: string;
+    name: string;
+    userId: string;
+    isSpecial?: boolean;
+    specialType?: string;
+  };
   spent: number;
   percentage: number;
 };
@@ -47,27 +53,23 @@ export function useBudgets() {
     try {
       setIsLoading(true);
       const [budgetsData, currentBudgetData, activeBudgetsData] = await Promise.all([
-        get<Budget[]>("/budgets"),
+        get<Budget[]>("/budgets").catch(() => []),
         get<Budget>("/budgets/current").catch(() => null),
         get<Budget[]>("/budgets/active").catch(() => []),
       ]);
 
-      if (budgetsData) {
-        setBudgets(budgetsData);
-      }
-      if (currentBudgetData) {
-        setCurrentBudget(currentBudgetData);
-      }
-      if (activeBudgetsData) {
-        setActiveBudgets(activeBudgetsData);
-      }
+      // Always set data, even if empty arrays/null
+      setBudgets(budgetsData || []);
+      setCurrentBudget(currentBudgetData);
+      setActiveBudgets(activeBudgetsData || []);
     } catch (error) {
+      // Only show error for actual API failures, not empty data
+      console.error("Error loading budgets:", error);
       addToast({
         title: "Error",
         description: "No se pudieron cargar los presupuestos.",
         color: "danger",
       });
-      console.error("Error loading budgets:", error);
     } finally {
       setIsLoading(false);
     }

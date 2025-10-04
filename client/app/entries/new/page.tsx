@@ -213,7 +213,7 @@ export default function NewEntryPage() {
         type,
         amount: parseFloat(amount),
         description,
-        categoryId: type === "TRANSFER" ? null : categoryId,
+        categoryId: categoryId || null,
         date: new Date(date),
         accountEntries: finalAccountEntries,
       });

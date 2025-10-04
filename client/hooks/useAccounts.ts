@@ -4,12 +4,13 @@ import { addToast } from "@heroui/toast";
 import { useApi } from "./useApi";
 
 export type AccountType =
-  | "SAVINGS"
   | "CHECKING"
-  | "CREDIT_CARD"
-  | "CASH"
+  | "CUENTA_RUT"
+  | "CUENTA_VISTA"
+  | "BILLETERA_DIGITAL"
+  | "SAVINGS"
   | "INVESTMENT"
-  | "OTHER";
+  | "CASH";
 
 export type Account = {
   id: string;
@@ -17,6 +18,7 @@ export type Account = {
   type: AccountType;
   balance: number;
   isActive: boolean;
+  isSavingsAccount: boolean;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -27,6 +29,7 @@ export type CreateAccountData = {
   type: AccountType;
   balance?: number;
   isActive?: boolean;
+  isSavingsAccount?: boolean;
 };
 
 export type AccountDistribution = {
@@ -48,27 +51,23 @@ export function useAccounts() {
     try {
       setIsLoading(true);
       const [accountsData, netWorthData, distributionData] = await Promise.all([
-        get<Account[]>("/accounts"),
-        get<{ netWorth: number }>("/accounts/net-worth"),
-        get<AccountDistribution[]>("/accounts/distribution"),
+        get<Account[]>("/accounts").catch(() => []),
+        get<{ netWorth: number }>("/accounts/net-worth").catch(() => ({ netWorth: 0 })),
+        get<AccountDistribution[]>("/accounts/distribution").catch(() => []),
       ]);
 
-      if (accountsData) {
-        setAccounts(accountsData);
-      }
-      if (netWorthData) {
-        setNetWorth(netWorthData.netWorth);
-      }
-      if (distributionData) {
-        setAccountsDistribution(distributionData);
-      }
+      // Always set data, even if empty arrays/default values
+      setAccounts(accountsData || []);
+      setNetWorth(netWorthData?.netWorth || 0);
+      setAccountsDistribution(distributionData || []);
     } catch (error) {
+      // Only show error for actual API failures, not empty data
+      console.error("Error loading accounts:", error);
       addToast({
         title: "Error",
         description: "No se pudieron cargar las cuentas.",
         color: "danger",
       });
-      console.error("Error loading accounts:", error);
     } finally {
       setIsLoading(false);
     }

@@ -7,12 +7,13 @@ export enum EntryType {
 
 // Account types for different financial accounts
 export enum AccountType {
-  SAVINGS = "SAVINGS",
   CHECKING = "CHECKING",
-  CREDIT_CARD = "CREDIT_CARD",
-  CASH = "CASH",
+  CUENTA_RUT = "CUENTA_RUT",
+  CUENTA_VISTA = "CUENTA_VISTA",
+  BILLETERA_DIGITAL = "BILLETERA_DIGITAL",
+  SAVINGS = "SAVINGS",
   INVESTMENT = "INVESTMENT",
-  OTHER = "OTHER",
+  CASH = "CASH",
 }
 
 // Type guards for runtime validation
@@ -40,18 +41,20 @@ export const getEntryTypeLabel = (type: EntryType): string => {
 
 export const getAccountTypeLabel = (type: AccountType): string => {
   switch (type) {
-    case AccountType.SAVINGS:
-      return "Ahorros";
     case AccountType.CHECKING:
       return "Cuenta Corriente";
-    case AccountType.CREDIT_CARD:
-      return "Tarjeta de Crédito";
+    case AccountType.CUENTA_RUT:
+      return "Cuenta Rut";
+    case AccountType.CUENTA_VISTA:
+      return "Cuenta Vista";
+    case AccountType.BILLETERA_DIGITAL:
+      return "Billetera Digital";
+    case AccountType.SAVINGS:
+      return "Cuenta de Ahorro";
+    case AccountType.INVESTMENT:
+      return "Cuenta de Inversión";
     case AccountType.CASH:
       return "Efectivo";
-    case AccountType.INVESTMENT:
-      return "Inversión";
-    case AccountType.OTHER:
-      return "Otro";
     default:
       return type;
   }

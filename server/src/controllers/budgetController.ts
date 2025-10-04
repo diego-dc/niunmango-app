@@ -53,10 +53,8 @@ export const budgetController = {
       }
 
       const currentBudget = await budgetService.getCurrentByUserId(userId);
-      if (!currentBudget) {
-        return res.status(404).json({ error: "No current budget found" });
-      }
 
+      // Return null if no current budget exists - this is not an error
       return res.json(currentBudget);
     } catch (error) {
       return res.status(500).json({ error: "Failed to fetch current budget" });

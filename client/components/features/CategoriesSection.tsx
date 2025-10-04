@@ -8,8 +8,8 @@ import { Input } from "@heroui/input";
 import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
 
-import { Plus, Tag } from "@/components/icons";
-import { useCategories } from "@/hooks/useCategories";
+import { Plus, Tag, PiggyBank } from "@/components/icons";
+import { useCategories } from "@/context/CategoryContext";
 
 export function CategoriesSection() {
   const { categories, createCategory, deleteCategory, isCreating } =
@@ -37,6 +37,15 @@ export function CategoriesSection() {
   };
 
   const removeCategory = async (categoryId: string, categoryName: string) => {
+    if (categoryName === "Ahorro") {
+      addToast({
+        title: "Advertencia",
+        description: "No se puede eliminar la categoría especial de ahorro.",
+        color: "warning",
+      });
+      return;
+    }
+
     try {
       await deleteCategory(categoryId);
       addToast({
@@ -94,15 +103,21 @@ export function CategoriesSection() {
               No hay categorías creadas. Agrega tu primera categoría.
             </p>
           ) : (
-            categories.map((category) => (
-              <Chip
-                key={category.id}
-                color="primary"
-                onClose={() => removeCategory(category.id, category.name)}
-              >
-                {category.name}
-              </Chip>
-            ))
+            categories.map((category) => {
+              const isSavingsCategory = category.name === "Ahorro";
+
+              return (
+                <Chip
+                  key={category.id}
+                  color={isSavingsCategory ? "success" : "primary"}
+                  variant={isSavingsCategory ? "solid" : "flat"}
+                  startContent={isSavingsCategory ? <PiggyBank className="w-3 h-3" /> : <Tag className="w-3 h-3" />}
+                  onClose={isSavingsCategory ? undefined : () => removeCategory(category.id, category.name)}
+                >
+                  {category.name}
+                </Chip>
+              );
+            })
           )}
         </div>
       </CardBody>

@@ -8,6 +8,7 @@ import { Input } from "@heroui/input";
 import { Chip } from "@heroui/chip";
 import { Spinner } from "@heroui/spinner";
 import { Select, SelectItem } from "@heroui/select";
+import { Checkbox } from "@heroui/checkbox";
 import {
   Table,
   TableHeader,
@@ -60,6 +61,7 @@ export function AccountsSection() {
     name: "",
     type: "CHECKING" as AccountType,
     balance: "0",
+    isSavingsAccount: false,
   });
   const [accountToDelete, setAccountToDelete] = useState<{
     id: string;
@@ -73,11 +75,12 @@ export function AccountsSection() {
 
   const accountTypes = [
     { key: "CHECKING", label: "Cuenta Corriente" },
-    { key: "SAVINGS", label: "Ahorros" },
-    { key: "CREDIT_CARD", label: "Tarjeta de Crédito" },
+    { key: "CUENTA_RUT", label: "Cuenta Rut" },
+    { key: "CUENTA_VISTA", label: "Cuenta Vista" },
+    { key: "BILLETERA_DIGITAL", label: "Billetera Digital" },
+    { key: "SAVINGS", label: "Cuenta de Ahorro" },
+    { key: "INVESTMENT", label: "Cuenta de Inversión" },
     { key: "CASH", label: "Efectivo" },
-    { key: "INVESTMENT", label: "Inversión" },
-    { key: "OTHER", label: "Otro" },
   ];
 
   const getAccountTypeColor = (type: string) => {
@@ -85,12 +88,14 @@ export function AccountsSection() {
       case "SAVINGS":
         return "success";
       case "CHECKING":
+      case "CUENTA_RUT":
+      case "CUENTA_VISTA":
         return "primary";
-      case "CREDIT_CARD":
-        return "warning";
-      case "CASH":
+      case "BILLETERA_DIGITAL":
         return "secondary";
       case "INVESTMENT":
+        return "warning";
+      case "CASH":
         return "default";
       default:
         return "default";
@@ -111,8 +116,9 @@ export function AccountsSection() {
         name: newAccount.name,
         type: newAccount.type,
         balance: parseFloat(newAccount.balance) || 0,
+        isSavingsAccount: newAccount.isSavingsAccount,
       });
-      setNewAccount({ name: "", type: "CHECKING", balance: "0" });
+      setNewAccount({ name: "", type: "CHECKING", balance: "0", isSavingsAccount: false });
       onClose();
       addToast({
         title: "Éxito",
@@ -219,10 +225,11 @@ export function AccountsSection() {
               <Spinner size="lg" />
             </div>
           ) : accounts.length === 0 ? (
-            <div className="text-center py-8 text-default-500">
+            <div className="text-center flex flex-col items-center py-8 text-default-500">
               <Icon
                 icon="majesticons:creditcard"
-                className="w-5 h-5 text-primary"
+                className="text-gray-500"
+                height={46}
               />
               <p className="text-lg mb-2">Sin cuentas</p>
               <p>
@@ -235,6 +242,7 @@ export function AccountsSection() {
                 <TableColumn>NOMBRE</TableColumn>
                 <TableColumn>TIPO</TableColumn>
                 <TableColumn>BALANCE</TableColumn>
+                <TableColumn>AHORRO</TableColumn>
                 <TableColumn>ESTADO</TableColumn>
                 <TableColumn>ACCIONES</TableColumn>
               </TableHeader>
@@ -263,6 +271,15 @@ export function AccountsSection() {
                       >
                         {formatCurrency(account.balance)}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        color={account.isSavingsAccount ? "success" : "default"}
+                        size="sm"
+                        variant="dot"
+                      >
+                        {account.isSavingsAccount ? "Sí" : "No"}
+                      </Chip>
                     </TableCell>
                     <TableCell>
                       <Chip
@@ -356,6 +373,19 @@ export function AccountsSection() {
                       setNewAccount({ ...newAccount, balance: e.target.value })
                     }
                   />
+                  <Checkbox
+                    isSelected={newAccount.isSavingsAccount}
+                    onValueChange={(value) =>
+                      setNewAccount({ ...newAccount, isSavingsAccount: value })
+                    }
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-small">Destinar para ahorros</span>
+                      <span className="text-tiny text-default-400">
+                        Los transfers a esta cuenta se categorizarán automáticamente como "Ahorro"
+                      </span>
+                    </div>
+                  </Checkbox>
                 </div>
               </ModalBody>
               <ModalFooter>

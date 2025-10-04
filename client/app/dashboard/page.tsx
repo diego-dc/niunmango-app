@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
-import { Card, CardHeader, CardBody } from "@heroui/card";
-import { Divider } from "@heroui/divider";
 import { useDisclosure } from "@heroui/modal";
 import NextLink from "next/link";
 import { addToast } from "@heroui/toast";
@@ -47,15 +45,21 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const statsData = await get<Stats>("/entries/stats");
+        const statsData = await get<Stats>("/entries/stats").catch(() => ({
+          income: { total: 0, count: 0 },
+          expenses: { total: 0, count: 0 },
+          savings: { total: 0, count: 0 },
+          netIncome: 0,
+        }));
         setStats(statsData);
       } catch (error) {
+        // Only show error for actual API failures, not empty data
+        console.error("Error loading dashboard data:", error);
         addToast({
           title: "Error",
           description: "No se pudieron cargar los datos del dashboard.",
           color: "danger",
         });
-        console.error("Error loading dashboard data:", error);
       }
     };
 
@@ -193,7 +197,7 @@ export default function DashboardPage() {
           onPress={() => router.push("/entries/new?type=INCOME")}
         >
           <Icon icon={"game-icons:receive-money"} height={24} />
-          <span className="text-small">Nuevo Ingreso</span>
+          <span className="text-small">Ingreso</span>
         </Button>
 
         <Button
@@ -203,7 +207,7 @@ export default function DashboardPage() {
           onPress={() => router.push("/entries/new?type=EXPENSE")}
         >
           <Icon icon={"game-icons:pay-money"} height={24} />
-          <span className="text-small">Nuevo Gasto</span>
+          <span className="text-small">Gasto</span>
         </Button>
 
         <Button
@@ -213,7 +217,7 @@ export default function DashboardPage() {
           onPress={() => router.push("/entries/new?type=TRANSFER")}
         >
           <Icon icon={"hugeicons:money-exchange-03"} height={24} />
-          <span className="text-small">Movimiento</span>
+          <span className="text-small">Transferencia</span>
         </Button>
       </div>
 

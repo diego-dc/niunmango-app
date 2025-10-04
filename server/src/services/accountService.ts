@@ -8,6 +8,7 @@ interface CreateAccountData {
   type: AccountType;
   balance: number;
   userId: string;
+  isSavingsAccount?: boolean;
 }
 
 interface UpdateAccountData {
@@ -15,6 +16,7 @@ interface UpdateAccountData {
   type?: AccountType;
   balance?: number;
   isActive?: boolean;
+  isSavingsAccount?: boolean;
 }
 
 export const accountService = {

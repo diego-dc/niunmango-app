@@ -71,11 +71,23 @@ export function groupByDate<T>(
 
 /**
  * Sorts grouped date entries by date (most recent first)
+ * Also sorts entries within each group if they have a createdAt field
  */
 export function sortGroupedDates<T>(
   groupedItems: Record<string, T[]>
 ): [string, T[]][] {
-  return Object.entries(groupedItems).sort(([dateKeyA], [dateKeyB]) => {
-    return new Date(dateKeyB).getTime() - new Date(dateKeyA).getTime();
-  });
+  return Object.entries(groupedItems)
+    .sort(([dateKeyA], [dateKeyB]) => {
+      return new Date(dateKeyB).getTime() - new Date(dateKeyA).getTime();
+    })
+    .map(([dateKey, items]) => {
+      // Sort items within each group by createdAt if available
+      const sortedItems = [...items].sort((a: any, b: any) => {
+        if (a.createdAt && b.createdAt) {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        return 0;
+      });
+      return [dateKey, sortedItems] as [string, T[]];
+    });
 }

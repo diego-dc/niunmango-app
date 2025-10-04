@@ -67,7 +67,7 @@ export const accountController = {
 
   async create(req: Request, res: Response) {
     try {
-      const { name, type, balance = 0 } = req.body;
+      const { name, type, balance = 0, isSavingsAccount = false } = req.body;
       const userId = req.user?.id;
 
       if (!userId) {
@@ -87,6 +87,7 @@ export const accountController = {
         type,
         balance: Number(balance),
         userId,
+        isSavingsAccount: Boolean(isSavingsAccount),
       });
       return res.status(201).json(account);
     } catch (error: any) {
@@ -102,7 +103,7 @@ export const accountController = {
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { name, type, balance, isActive } = req.body;
+      const { name, type, balance, isActive, isSavingsAccount } = req.body;
       const userId = req.user?.id;
 
       if (!userId) {
@@ -119,6 +120,7 @@ export const accountController = {
       }
       if (balance !== undefined) updateData.balance = Number(balance);
       if (isActive !== undefined) updateData.isActive = Boolean(isActive);
+      if (isSavingsAccount !== undefined) updateData.isSavingsAccount = Boolean(isSavingsAccount);
 
       const account = await accountService.updateByIdAndUserId(
         id || "",

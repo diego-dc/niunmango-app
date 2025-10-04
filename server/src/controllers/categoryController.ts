@@ -12,6 +12,7 @@ export const categoryController = {
       const categories = await categoryService.getAllByUserId(userId);
       return res.json(categories);
     } catch (error) {
+      console.error("Error fetching categories:", error);
       return res.status(500).json({ error: "Failed to fetch categories" });
     }
   },

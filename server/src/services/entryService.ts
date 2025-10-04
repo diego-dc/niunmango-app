@@ -37,15 +37,15 @@ interface EntryFilters {
 
 export const entryService = {
   async getAllByUserId(
-    userId: string, 
-    page: number = 1, 
-    limit: number = 20, 
+    userId: string,
+    page: number = 1,
+    limit: number = 20,
     filters: EntryFilters = {}
   ) {
     const offset = (page - 1) * limit;
 
     const where: any = { userId };
-    
+
     if (filters.type) where.type = filters.type;
     if (filters.categoryId) where.categoryId = filters.categoryId;
     if (filters.startDate || filters.endDate) {
@@ -59,24 +59,24 @@ export const entryService = {
         where,
         skip: offset,
         take: limit,
-        orderBy: { date: "desc" },
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
         include: {
           category: true,
           entryAccounts: {
             include: {
-              account: true
-            }
-          }
-        }
+              account: true,
+            },
+          },
+        },
       }),
-      prisma.entry.count({ where })
+      prisma.entry.count({ where }),
     ]);
 
     return {
       entries,
       total,
       pages: Math.ceil(total / limit),
-      currentPage: page
+      currentPage: page,
     };
   },
 
@@ -87,27 +87,57 @@ export const entryService = {
         category: true,
         entryAccounts: {
           include: {
-            account: true
-          }
-        }
-      }
+            account: true,
+          },
+        },
+      },
     });
   },
 
   async create(data: CreateEntryData) {
     return await prisma.$transaction(async (tx: any) => {
+      let finalCategoryId = data.categoryId;
+
+      // Auto-assign "Ahorro" category if it's a transfer to a savings account
+      if (data.type === EntryType.TRANSFER && data.accountEntries.length > 0) {
+        // Find the destination account (the one with positive amount)
+        const destinationAccountEntry = data.accountEntries.find(
+          (ae) => ae.amount > 0
+        );
+
+        if (destinationAccountEntry) {
+          const destinationAccount = await tx.account.findUnique({
+            where: { id: destinationAccountEntry.accountId },
+          });
+
+          if (destinationAccount && destinationAccount.isSavingsAccount) {
+            // Find the "Ahorro" category for this user
+            const savingsCategory = await tx.category.findFirst({
+              where: {
+                userId: data.userId,
+                name: "Ahorro",
+              },
+            });
+
+            if (savingsCategory) {
+              finalCategoryId = savingsCategory.id;
+            }
+          }
+        }
+      }
+
       const entry = await tx.entry.create({
         data: {
           type: data.type,
           amount: data.amount,
           description: data.description,
-          categoryId: data.categoryId,
+          categoryId: finalCategoryId,
           userId: data.userId,
-          date: data.date || new Date()
+          date: data.date || new Date(),
         },
         include: {
-          category: true
-        }
+          category: true,
+        },
       });
 
       for (const accountEntry of data.accountEntries) {
@@ -115,8 +145,8 @@ export const entryService = {
           data: {
             entryId: entry.id,
             accountId: accountEntry.accountId,
-            amount: accountEntry.amount
-          }
+            amount: accountEntry.amount,
+          },
         });
 
         // Handle different entry types
@@ -126,9 +156,9 @@ export const entryService = {
             where: { id: accountEntry.accountId },
             data: {
               balance: {
-                increment: accountEntry.amount
-              }
-            }
+                increment: accountEntry.amount,
+              },
+            },
           });
         } else {
           // For INCOME/EXPENSE, use the traditional logic
@@ -137,9 +167,9 @@ export const entryService = {
             where: { id: accountEntry.accountId },
             data: {
               balance: {
-                increment: accountEntry.amount * multiplier
-              }
-            }
+                increment: accountEntry.amount * multiplier,
+              },
+            },
           });
         }
       }
@@ -150,10 +180,10 @@ export const entryService = {
           category: true,
           entryAccounts: {
             include: {
-              account: true
-            }
-          }
-        }
+              account: true,
+            },
+          },
+        },
       });
     });
   },
@@ -163,8 +193,8 @@ export const entryService = {
       const existingEntry = await tx.entry.findFirst({
         where: { id, userId },
         include: {
-          entryAccounts: true
-        }
+          entryAccounts: true,
+        },
       });
 
       if (!existingEntry) return null;
@@ -178,27 +208,64 @@ export const entryService = {
               where: { id: existingAccountEntry.accountId },
               data: {
                 balance: {
-                  increment: -existingAccountEntry.amount.toNumber()
-                }
-              }
+                  increment: -existingAccountEntry.amount.toNumber(),
+                },
+              },
             });
           } else {
             // For INCOME/EXPENSE, use the traditional logic
-            const multiplier = existingEntry.type === EntryType.EXPENSE ? 1 : -1;
+            const multiplier =
+              existingEntry.type === EntryType.EXPENSE ? 1 : -1;
             await tx.account.update({
               where: { id: existingAccountEntry.accountId },
               data: {
                 balance: {
-                  increment: existingAccountEntry.amount.toNumber() * multiplier
-                }
-              }
+                  increment:
+                    existingAccountEntry.amount.toNumber() * multiplier,
+                },
+              },
             });
           }
         }
 
         await tx.entryAccount.deleteMany({
-          where: { entryId: id }
+          where: { entryId: id },
         });
+      }
+
+      let finalCategoryId = data.categoryId;
+      const entryType = data.type || existingEntry.type;
+
+      // Auto-assign "Ahorro" category if it's a transfer to a savings account
+      if (
+        entryType === EntryType.TRANSFER &&
+        data.accountEntries &&
+        data.accountEntries.length > 0
+      ) {
+        // Find the destination account (the one with positive amount)
+        const destinationAccountEntry = data.accountEntries.find(
+          (ae) => ae.amount > 0
+        );
+
+        if (destinationAccountEntry) {
+          const destinationAccount = await tx.account.findUnique({
+            where: { id: destinationAccountEntry.accountId },
+          });
+
+          if (destinationAccount && destinationAccount.isSavingsAccount) {
+            // Find the "Ahorro" category for this user
+            const savingsCategory = await tx.category.findFirst({
+              where: {
+                userId: userId,
+                name: "Ahorro",
+              },
+            });
+
+            if (savingsCategory) {
+              finalCategoryId = savingsCategory.id;
+            }
+          }
+        }
       }
 
       await tx.entry.update({
@@ -207,21 +274,19 @@ export const entryService = {
           ...(data.type && { type: data.type }),
           ...(data.amount && { amount: data.amount }),
           ...(data.description && { description: data.description }),
-          ...(data.categoryId && { categoryId: data.categoryId }),
-          ...(data.date && { date: data.date })
-        }
+          ...(finalCategoryId !== undefined && { categoryId: finalCategoryId }),
+          ...(data.date && { date: data.date }),
+        },
       });
 
       if (data.accountEntries) {
-        const entryType = data.type || existingEntry.type;
-
         for (const accountEntry of data.accountEntries) {
           await tx.entryAccount.create({
             data: {
               entryId: id,
               accountId: accountEntry.accountId,
-              amount: accountEntry.amount
-            }
+              amount: accountEntry.amount,
+            },
           });
 
           // Handle different entry types
@@ -231,9 +296,9 @@ export const entryService = {
               where: { id: accountEntry.accountId },
               data: {
                 balance: {
-                  increment: accountEntry.amount
-                }
-              }
+                  increment: accountEntry.amount,
+                },
+              },
             });
           } else {
             // For INCOME/EXPENSE, use the traditional logic
@@ -242,9 +307,9 @@ export const entryService = {
               where: { id: accountEntry.accountId },
               data: {
                 balance: {
-                  increment: accountEntry.amount * multiplier
-                }
-              }
+                  increment: accountEntry.amount * multiplier,
+                },
+              },
             });
           }
         }
@@ -256,10 +321,10 @@ export const entryService = {
           category: true,
           entryAccounts: {
             include: {
-              account: true
-            }
-          }
-        }
+              account: true,
+            },
+          },
+        },
       });
     });
   },
@@ -269,8 +334,8 @@ export const entryService = {
       const entry = await tx.entry.findFirst({
         where: { id, userId },
         include: {
-          entryAccounts: true
-        }
+          entryAccounts: true,
+        },
       });
 
       if (!entry) return false;
@@ -281,18 +346,18 @@ export const entryService = {
           where: { id: accountEntry.accountId },
           data: {
             balance: {
-              increment: accountEntry.amount.toNumber() * multiplier
-            }
-          }
+              increment: accountEntry.amount.toNumber() * multiplier,
+            },
+          },
         });
       }
 
       await tx.entryAccount.deleteMany({
-        where: { entryId: id }
+        where: { entryId: id },
       });
 
       await tx.entry.delete({
-        where: { id }
+        where: { id },
       });
 
       return true;
@@ -301,7 +366,7 @@ export const entryService = {
 
   async getStatsByUserId(userId: string, startDate?: Date, endDate?: Date) {
     const where: any = { userId };
-    
+
     if (startDate || endDate) {
       where.date = {};
       if (startDate) where.date.gte = startDate;
@@ -312,13 +377,13 @@ export const entryService = {
       prisma.entry.aggregate({
         where: { ...where, type: EntryType.INCOME },
         _sum: { amount: true },
-        _count: true
+        _count: true,
       }),
       prisma.entry.aggregate({
         where: { ...where, type: EntryType.EXPENSE },
         _sum: { amount: true },
-        _count: true
-      })
+        _count: true,
+      }),
     ]);
 
     const totalIncome = income._sum.amount || 0;
@@ -327,18 +392,23 @@ export const entryService = {
     return {
       income: {
         total: totalIncome,
-        count: income._count
+        count: income._count,
       },
       expenses: {
         total: totalExpenses,
-        count: expenses._count
+        count: expenses._count,
       },
       netIncome: Number(totalIncome) - Number(totalExpenses),
-      totalTransactions: income._count + expenses._count
+      totalTransactions: income._count + expenses._count,
     };
   },
 
-  async getByCategory(userId: string, categoryId: string, startDate?: Date, endDate?: Date) {
+  async getByCategory(
+    userId: string,
+    categoryId: string,
+    startDate?: Date,
+    endDate?: Date
+  ) {
     const where: any = { userId, categoryId };
 
     if (startDate || endDate) {
@@ -354,10 +424,10 @@ export const entryService = {
         category: true,
         entryAccounts: {
           include: {
-            account: true
-          }
-        }
-      }
+            account: true,
+          },
+        },
+      },
     });
   },
 
@@ -370,10 +440,10 @@ export const entryService = {
         category: true,
         entryAccounts: {
           include: {
-            account: true
-          }
-        }
-      }
+            account: true,
+          },
+        },
+      },
     });
-  }
+  },
 };
