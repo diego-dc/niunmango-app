@@ -20,11 +20,11 @@ import {
   useDisclosure,
 } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
-
-import { Plus, Trash, Target, Edit3, PiggyBank } from "@/components/icons";
+import { Plus, Trash, Target, Edit3 } from "@/components/icons";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useCategories } from "@/context/CategoryContext";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
+import { Icon } from "@iconify/react";
 
 export function BudgetsSection() {
   const {
@@ -253,120 +253,135 @@ export function BudgetsSection() {
             <div className="space-y-4">
               <Accordion variant="splitted">
                 {currentBudgets.map((budget) => (
-                <AccordionItem
-                  key={budget.id}
-                  title={
-                    <div className="flex flex-col items-start">
-                      <h4 className="font-semibold">{budget.name}</h4>
-                      <p className="text-small text-default-500">
-                        {new Date(budget.startDate).toLocaleDateString()} -{" "}
-                        {new Date(budget.endDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                  }
-                >
-                  <div className="space-y-4">
-                    <div className="flex gap-2 justify-center">
-                      <Button
-                        color="secondary"
-                        size="sm"
-                        variant="flat"
-                        onPress={() => {
-                          setSelectedBudgetId(budget.id);
-                          onAddItemOpen();
-                        }}
-                      >
-                        + Categoría
-                      </Button>
-                      <Button
-                        color="danger"
-                        size="sm"
-                        startContent={<Trash className="w-3 h-3" />}
-                        variant="flat"
-                        onPress={() =>
-                          confirmDeleteBudget(budget.id, budget.name)
-                        }
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
-
-                    <div className="mb-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-small font-medium">
-                          Progreso Total
-                        </span>
-                        <span className="text-small">
-                          {formatCurrency(budget.totalSpent)} /{" "}
-                          {formatCurrency(budget.totalBudgeted)}
-                        </span>
+                  <AccordionItem
+                    key={budget.id}
+                    title={
+                      <div className="flex flex-col items-start">
+                        <h4 className="font-semibold">{budget.name}</h4>
+                        <p className="text-small text-default-500">
+                          {new Date(budget.startDate).toLocaleDateString()} -{" "}
+                          {new Date(budget.endDate).toLocaleDateString()}
+                        </p>
                       </div>
-                      <Progress
-                        color={
-                          budget.overallPercentage > 100 ? "danger" : "success"
-                        }
-                        value={budget.overallPercentage}
-                      />
-                    </div>
-
-                    {budget.budgetItems.length > 0 && (
-                      <div className="space-y-2">
-                        {budget.budgetItems.map((item) => {
-                          const isSavingsCategory = item.category.name === "Ahorro";
-
-                          return (
-                            <div
-                              key={item.id}
-                              className={`flex justify-between items-center p-2 rounded ${
-                                isSavingsCategory
-                                  ? "bg-success-50 border border-success-200"
-                                  : "bg-default-50"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                {isSavingsCategory && (
-                                  <PiggyBank className="w-4 h-4 text-success-600" />
-                                )}
-                                <span className={`font-medium ${
-                                  isSavingsCategory ? "text-success-700" : ""
-                                }`}>
-                                  {item.category.name}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-small">
-                                  {formatCurrency(item.spent)} /{" "}
-                                  {formatCurrency(item.budgetedAmount)}
-                                </span>
-                                <Chip
-                                  color={
-                                    isSavingsCategory
-                                      ? "success"
-                                      : item.percentage > 100
-                                      ? "danger"
-                                      : "success"
-                                  }
-                                  size="sm"
-                                  variant="flat"
-                                >
-                                  {formatPercentage(item.percentage)}
-                                </Chip>
-                                <Button
-                                  isIconOnly
-                                  size="sm"
-                                  variant="light"
-                                  onPress={() => handleEditBudgetItem(item, budget.id)}
-                                >
-                                  <Edit3 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          );
-                        })}
+                    }
+                  >
+                    <div className="space-y-4">
+                      <div className="flex gap-2 justify-center">
+                        <Button
+                          color="secondary"
+                          size="sm"
+                          variant="flat"
+                          onPress={() => {
+                            setSelectedBudgetId(budget.id);
+                            onAddItemOpen();
+                          }}
+                        >
+                          + Categoría
+                        </Button>
+                        <Button
+                          color="danger"
+                          size="sm"
+                          startContent={<Trash className="w-3 h-3" />}
+                          variant="flat"
+                          onPress={() =>
+                            confirmDeleteBudget(budget.id, budget.name)
+                          }
+                        >
+                          Eliminar
+                        </Button>
                       </div>
-                    )}
-                  </div>
-                </AccordionItem>
+
+                      <div className="mb-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-small font-medium">
+                            Estado General
+                          </span>
+                          <span className="text-small">
+                            {formatCurrency(budget.totalSpent)} /{" "}
+                            {formatCurrency(budget.totalBudgeted)}
+                          </span>
+                        </div>
+                        <Progress
+                          color={
+                            budget.overallPercentage > 100
+                              ? "danger"
+                              : "success"
+                          }
+                          value={budget.overallPercentage}
+                        />
+                      </div>
+
+                      {budget.budgetItems.length > 0 && (
+                        <div className="space-y-2">
+                          {budget.budgetItems.map((item) => {
+                            const isSavingsCategory =
+                              item.category.name === "Ahorro";
+
+                            return (
+                              <div
+                                key={item.id}
+                                className={`flex flex-col px-2 py-1 rounded-lg ${
+                                  isSavingsCategory
+                                    ? "bg-success-50 border border-success-200"
+                                    : "bg-default-50"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    {isSavingsCategory && (
+                                      <Icon
+                                        icon="streamline-plump:piggy-bank-solid"
+                                        className="w-auto h-4 text-success-600"
+                                      />
+                                    )}
+                                    <span
+                                      className={`font-medium ${
+                                        isSavingsCategory
+                                          ? "text-success-700"
+                                          : ""
+                                      }`}
+                                    >
+                                      {item.category.name}
+                                    </span>
+                                  </div>
+                                  <Chip
+                                    color={
+                                      isSavingsCategory
+                                        ? "success"
+                                        : item.percentage > 100
+                                          ? "danger"
+                                          : "success"
+                                    }
+                                    size="sm"
+                                    variant="flat"
+                                  >
+                                    {formatPercentage(item.percentage)}
+                                  </Chip>
+                                </div>
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-small">
+                                    {formatCurrency(item.spent)} /{" "}
+                                    {formatCurrency(item.budgetedAmount)}
+                                  </span>
+
+                                  <Button
+                                    isIconOnly
+                                    size="sm"
+                                    variant="light"
+                                    onPress={() =>
+                                      handleEditBudgetItem(item, budget.id)
+                                    }
+                                  >
+                                    <Edit3 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </AccordionItem>
                 ))}
               </Accordion>
 
@@ -528,7 +543,9 @@ export function BudgetsSection() {
               <ModalBody>
                 <div className="space-y-4">
                   <div>
-                    <p className="text-small text-default-500 mb-2">Categoría:</p>
+                    <p className="text-small text-default-500 mb-2">
+                      Categoría:
+                    </p>
                     <p className="font-medium">{editingItem?.categoryName}</p>
                   </div>
                   <Input

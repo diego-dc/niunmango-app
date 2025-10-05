@@ -1,17 +1,9 @@
 "use client";
 
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@heroui/modal";
-import { Button } from "@heroui/button";
+import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Progress } from "@heroui/progress";
 import { Chip } from "@heroui/chip";
-import { Divider } from "@heroui/divider";
 import { Icon } from "@iconify/react";
 import { formatCurrency } from "@/lib/formatters";
 import { Budget } from "@/hooks/useBudgets";
@@ -64,7 +56,6 @@ export function BudgetDetailsModal({
       size="2xl"
       scrollBehavior="inside"
       classNames={{
-        base: "bg-background",
         header: "border-b border-divider",
         footer: "border-t border-divider",
       }}
@@ -73,10 +64,11 @@ export function BudgetDetailsModal({
         <ModalHeader className="flex flex-col gap-3">
           <div className="flex flex-col items-start gap-2">
             <Chip
-              size="sm"
+              size="md"
               variant="flat"
+              className="px-2"
               color={daysRemaining > 0 ? "success" : "danger"}
-              startContent={<Icon icon="heroicons:calendar" className="mr-1" />}
+              startContent={<Icon icon="heroicons:calendar" className="mx-1" />}
             >
               {daysRemaining > 0
                 ? `${daysRemaining} días restantes`
@@ -95,11 +87,11 @@ export function BudgetDetailsModal({
           {/* Overall Progress */}
           <div>
             <div>
-              <h3 className="text-lg font-semibold">Progreso General</h3>
+              <h3 className="text-lg font-semibold">Estado Actual</h3>
             </div>
             <div className="gap-4">
               <div className="flex justify-between items-center">
-                <span className="text-default-600">Progreso Total</span>
+                <span className="text-default-600">Estado General</span>
                 <span className="text-lg font-semibold">
                   {budget.overallPercentage.toFixed(1)}%
                 </span>

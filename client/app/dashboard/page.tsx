@@ -29,7 +29,6 @@ interface Stats {
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
 
-  console.log("current user: ", user);
   const { get, loading } = useApi();
   const { activeBudgets } = useBudgets();
   const { accountsDistribution, netWorth } = useAccounts();
@@ -54,7 +53,6 @@ export default function DashboardPage() {
         setStats(statsData);
       } catch (error) {
         // Only show error for actual API failures, not empty data
-        console.error("Error loading dashboard data:", error);
         addToast({
           title: "Error",
           description: "No se pudieron cargar los datos del dashboard.",
@@ -82,7 +80,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-2 flex flex-col gap-4">
+    <div className="max-w-7xl mx-auto p-2 flex flex-col gap-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-8 gap-4">
         <div>
@@ -181,7 +179,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Current Budgets Carrousel */}
-      <div className="my-6">
+      <div>
         <BudgetCarousel
           budgets={activeBudgets}
           onBudgetClick={handleBudgetClick}
@@ -222,7 +220,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Networth Section */}
-      <div className="space-y-6">
+      <div className="space-y-6 mb-5">
         <div>
           <h3 className="text-2xl font-medium">
             Tu capital neto total es{" "}

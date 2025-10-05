@@ -8,8 +8,9 @@ import { Input } from "@heroui/input";
 import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
 
-import { Plus, Tag, PiggyBank } from "@/components/icons";
+import { Plus, Tag } from "@/components/icons";
 import { useCategories } from "@/context/CategoryContext";
+import { Icon } from "@iconify/react";
 
 export function CategoriesSection() {
   const { categories, createCategory, deleteCategory, isCreating } =
@@ -110,9 +111,24 @@ export function CategoriesSection() {
                 <Chip
                   key={category.id}
                   color={isSavingsCategory ? "success" : "primary"}
-                  variant={isSavingsCategory ? "solid" : "flat"}
-                  startContent={isSavingsCategory ? <PiggyBank className="w-3 h-3" /> : <Tag className="w-3 h-3" />}
-                  onClose={isSavingsCategory ? undefined : () => removeCategory(category.id, category.name)}
+                  variant="flat"
+                  size="lg"
+                  className="px-2"
+                  startContent={
+                    isSavingsCategory ? (
+                      <Icon
+                        icon="streamline-plump:piggy-bank-solid"
+                        className="w-4 h-4 mx-1"
+                      />
+                    ) : (
+                      <Tag className="w-4 h-4 mx-1" />
+                    )
+                  }
+                  onClose={
+                    isSavingsCategory
+                      ? undefined
+                      : () => removeCategory(category.id, category.name)
+                  }
                 >
                   {category.name}
                 </Chip>

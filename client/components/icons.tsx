@@ -343,23 +343,3 @@ export const Edit3 = ({ size = 24, width, height, ...props }: IconSvgProps) => (
     />
   </svg>
 );
-
-export const PiggyBank = ({ size = 24, width, height, ...props }: IconSvgProps) => (
-  <svg
-    aria-hidden="true"
-    height={size || height}
-    viewBox="0 0 24 24"
-    width={size || width}
-    {...props}
-  >
-    <path
-      d="M15 10c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1zm-4 0c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1zm8-5c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1zm-1 10c0-1.1-.9-2-2-2h-1c-1.1 0-2 .9-2 2v1h-1c-1.1 0-2 .9-2 2v3c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2v-3c0-1.1-.9-2-2-2h-1v-1z"
-      fill="currentColor"
-    />
-    <path
-      d="M12 2c-1.38 0-2.63.56-3.54 1.46L7.05 4.88c-.78.78-.78 2.05 0 2.83.39.39.9.58 1.41.58s1.02-.19 1.41-.58L12 5.59l2.12 2.12c.39.39.9.58 1.41.58s1.02-.19 1.41-.58c.78-.78.78-2.05 0-2.83l-1.41-1.42C14.63 2.56 13.38 2 12 2z"
-      fill="currentColor"
-      opacity="0.7"
-    />
-  </svg>
-);

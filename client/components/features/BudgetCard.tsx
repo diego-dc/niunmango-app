@@ -41,7 +41,8 @@ export function BudgetCard({ budget, onClick }: BudgetCardProps) {
             size="sm"
             variant="bordered"
             color="primary"
-            startContent={<Icon icon="majesticons:calendar" className="mr-1" />}
+            className="px-2"
+            startContent={<Icon icon="majesticons:calendar" className="mx-1" />}
           >
             {formatDateRange(budget.startDate, budget.endDate)}
           </Chip>
@@ -99,9 +100,10 @@ export function BudgetCard({ budget, onClick }: BudgetCardProps) {
       <CardFooter className="p-4 pt-0">
         <div className="flex justify-between items-center w-full">
           <Chip
-            size="sm"
-            variant="flat"
-            startContent={<Icon icon="heroicons:folder" className="mr-1" />}
+            size="md"
+            variant="bordered"
+            startContent={<Icon icon="heroicons:folder" className="mx-1" />}
+            className="p-2"
           >
             {budget.budgetItems.length} categorías
           </Chip>

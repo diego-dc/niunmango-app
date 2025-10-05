@@ -28,15 +28,14 @@ import {
   getChipColor,
   getTypeLabel,
   formatAmount,
-  getAmountColor
+  getAmountColor,
 } from "@/utils/entryHelpers";
 import {
   formatDateLong,
   formatDateShort,
   groupByDate,
-  sortGroupedDates
+  sortGroupedDates,
 } from "@/utils/dateHelpers";
-
 
 interface Entry {
   id: string;
@@ -181,7 +180,6 @@ export default function EntriesPage() {
     });
   };
 
-
   const openEntryModal = (entry: Entry) => {
     setSelectedEntry(entry);
     setEditForm({
@@ -317,19 +315,25 @@ export default function EntriesPage() {
                 >
                   <SelectItem
                     key="INCOME"
-                    startContent={<Icon icon={getTypeIcon("INCOME")} width={16} />}
+                    startContent={
+                      <Icon icon={getTypeIcon("INCOME")} width={16} />
+                    }
                   >
                     Ingresos
                   </SelectItem>
                   <SelectItem
                     key="EXPENSE"
-                    startContent={<Icon icon={getTypeIcon("EXPENSE")} width={16} />}
+                    startContent={
+                      <Icon icon={getTypeIcon("EXPENSE")} width={16} />
+                    }
                   >
                     Gastos
                   </SelectItem>
                   <SelectItem
                     key="TRANSFER"
-                    startContent={<Icon icon={getTypeIcon("TRANSFER")} width={16} />}
+                    startContent={
+                      <Icon icon={getTypeIcon("TRANSFER")} width={16} />
+                    }
                   >
                     Transferencias
                   </SelectItem>
@@ -392,8 +396,8 @@ export default function EntriesPage() {
         ) : (
           <div className="space-y-6">
             {/* Group entries by date but maintain chronological order within groups */}
-            {sortGroupedDates(groupByDate(entries, (entry) => entry.date))
-              .map(([dateKey, dayEntries]) => (
+            {sortGroupedDates(groupByDate(entries, (entry) => entry.date)).map(
+              ([dateKey, dayEntries]) => (
                 <div key={dateKey} className="space-y-3">
                   {/* Date Header */}
                   <div className="flex items-center gap-3">
@@ -407,7 +411,10 @@ export default function EntriesPage() {
                   <div className="space-y-2">
                     {dayEntries
                       .sort((a, b) => {
-                        return new Date(b.date).getTime() - new Date(a.date).getTime();
+                        return (
+                          new Date(b.date).getTime() -
+                          new Date(a.date).getTime()
+                        );
                       })
                       .map((entry) => (
                         <div
@@ -455,7 +462,8 @@ export default function EntriesPage() {
                       ))}
                   </div>
                 </div>
-              ))}
+              )
+            )}
           </div>
         )}
       </div>
@@ -495,16 +503,17 @@ export default function EntriesPage() {
                   // View Mode
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
+                      <div className="flex gap-2 flex-col">
                         <p className="text-sm text-default-500">Tipo</p>
                         <Chip
                           color={getChipColor(selectedEntry.type)}
-                          size="sm"
+                          size="md"
+                          className="px-2"
                           startContent={
                             <Icon
                               icon={getTypeIcon(selectedEntry.type)}
                               width={16}
-                              className="mx-1x"
+                              className="mx-1"
                             />
                           }
                           variant="flat"
@@ -512,7 +521,7 @@ export default function EntriesPage() {
                           {getTypeLabel(selectedEntry.type)}
                         </Chip>
                       </div>
-                      <div>
+                      <div className="flex gap-2 flex-col">
                         <p className="text-sm text-default-500">Fecha</p>
                         <p className="font-medium">
                           {formatDateShort(selectedEntry.date)}
@@ -520,19 +529,23 @@ export default function EntriesPage() {
                       </div>
                     </div>
 
-                    <div>
-                      <p className="text-sm text-default-500">Descripción</p>
-                      <p className="font-medium">{selectedEntry.description}</p>
-                    </div>
+                    {selectedEntry.description && (
+                      <div className="flex gap-2 flex-col">
+                        <p className="text-sm text-default-500">Descripción</p>
+                        <p className="font-medium">
+                          {selectedEntry.description}
+                        </p>
+                      </div>
+                    )}
 
-                    <div>
+                    <div className="flex gap-2 flex-col">
                       <p className="text-sm text-default-500">Categoría</p>
-                      <Chip size="sm" variant="bordered">
+                      <Chip size="md" variant="bordered">
                         {selectedEntry.category?.name || "Sin categoría"}
                       </Chip>
                     </div>
 
-                    <div>
+                    <div className="flex gap-2 flex-col">
                       <p className="text-sm text-default-500">Monto Total</p>
                       <p
                         className={`text-xl font-bold ${getAmountColor(selectedEntry.type)}`}
@@ -586,19 +599,25 @@ export default function EntriesPage() {
                       >
                         <SelectItem
                           key="INCOME"
-                          startContent={<Icon icon={getTypeIcon("INCOME")} width={16} />}
+                          startContent={
+                            <Icon icon={getTypeIcon("INCOME")} width={16} />
+                          }
                         >
                           Ingresos
                         </SelectItem>
                         <SelectItem
                           key="EXPENSE"
-                          startContent={<Icon icon={getTypeIcon("EXPENSE")} width={16} />}
+                          startContent={
+                            <Icon icon={getTypeIcon("EXPENSE")} width={16} />
+                          }
                         >
                           Gastos
                         </SelectItem>
                         <SelectItem
                           key="TRANSFER"
-                          startContent={<Icon icon={getTypeIcon("TRANSFER")} width={16} />}
+                          startContent={
+                            <Icon icon={getTypeIcon("TRANSFER")} width={16} />
+                          }
                         >
                           Transferencias
                         </SelectItem>
