@@ -37,7 +37,9 @@ export function getTypeColor(type: EntryType): string {
 /**
  * Gets the chip color for entry type (for Hero UI Chip component)
  */
-export function getChipColor(type: EntryType): "success" | "danger" | "secondary" | "default" {
+export function getChipColor(
+  type: EntryType,
+): "success" | "danger" | "secondary" | "default" {
   switch (type) {
     case "INCOME":
       return "success";
@@ -71,6 +73,7 @@ export function getTypeLabel(type: EntryType): string {
  */
 export function formatAmount(amount: number, type: EntryType): string {
   const currency = formatCurrency(amount);
+
   switch (type) {
     case "INCOME":
       return `+${currency}`;

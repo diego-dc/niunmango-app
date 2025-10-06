@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,7 @@ export const budgetService = {
   async getAllByUserId(userId: string) {
     return await prisma.budget.findMany({
       where: { userId },
-      orderBy: { startDate: "desc" },
+      orderBy: { startDate: 'desc' },
       include: {
         budgetItems: {
           include: {
@@ -69,7 +69,7 @@ export const budgetService = {
           },
         },
       },
-      orderBy: { startDate: "desc" },
+      orderBy: { startDate: 'desc' },
     });
   },
 
@@ -88,7 +88,7 @@ export const budgetService = {
           },
         },
       },
-      orderBy: { startDate: "desc" },
+      orderBy: { startDate: 'desc' },
     });
   },
 
@@ -126,11 +126,7 @@ export const budgetService = {
     });
   },
 
-  async updateByIdAndUserId(
-    id: string,
-    userId: string,
-    data: UpdateBudgetData
-  ) {
+  async updateByIdAndUserId(id: string, userId: string, data: UpdateBudgetData) {
     return await prisma.$transaction(async (tx: any) => {
       const existingBudget = await tx.budget.findFirst({
         where: { id, userId },
@@ -191,7 +187,7 @@ export const budgetService = {
 
       return true;
     } catch (error: any) {
-      if (error.code === "P2025") {
+      if (error.code === 'P2025') {
         return false;
       }
       throw error;
@@ -206,18 +202,18 @@ export const budgetService = {
       budget.budgetItems.map(async (item: any) => {
         // Check if this is the savings category
         const category = await prisma.category.findUnique({
-          where: { id: item.categoryId }
+          where: { id: item.categoryId },
         });
 
         let spent: number;
 
-        if (category?.name === "Ahorro") {
+        if (category?.name === 'Ahorro') {
           // For savings category: spent = sum of transfers to SAVINGS accounts
           const savingsEntries = await prisma.entry.findMany({
             where: {
               userId,
               categoryId: item.categoryId,
-              type: "TRANSFER",
+              type: 'TRANSFER',
               date: {
                 gte: budget.startDate,
                 lte: budget.endDate,
@@ -235,7 +231,7 @@ export const budgetService = {
             where: {
               userId,
               categoryId: item.categoryId,
-              type: "EXPENSE",
+              type: 'EXPENSE',
               date: {
                 gte: budget.startDate,
                 lte: budget.endDate,
@@ -250,9 +246,7 @@ export const budgetService = {
 
         const remaining = Number(item.budgetedAmount) - spent;
         const percentage =
-          Number(item.budgetedAmount) > 0
-            ? (spent / Number(item.budgetedAmount)) * 100
-            : 0;
+          Number(item.budgetedAmount) > 0 ? (spent / Number(item.budgetedAmount)) * 100 : 0;
 
         return {
           ...item,
@@ -268,10 +262,7 @@ export const budgetService = {
       (sum, item) => sum + Number(item.budgetedAmount),
       0
     );
-    const totalSpent = budgetItemsWithProgress.reduce(
-      (sum, item) => sum + Number(item.spent),
-      0
-    );
+    const totalSpent = budgetItemsWithProgress.reduce((sum, item) => sum + Number(item.spent), 0);
 
     return {
       ...budget,
@@ -280,9 +271,7 @@ export const budgetService = {
       totalSpent,
       totalRemaining: totalBudgeted - totalSpent,
       overallPercentage:
-        totalBudgeted > 0
-          ? Math.round((totalSpent / totalBudgeted) * 10000) / 100
-          : 0,
+        totalBudgeted > 0 ? Math.round((totalSpent / totalBudgeted) * 10000) / 100 : 0,
     };
   },
 
@@ -304,7 +293,7 @@ export const budgetService = {
           },
         },
       },
-      orderBy: { startDate: "desc" },
+      orderBy: { startDate: 'desc' },
     });
   },
 };

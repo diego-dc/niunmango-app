@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import { AccountType } from "../types/enums";
+import { PrismaClient } from '@prisma/client';
+import { AccountType } from '../types/enums';
 
 const prisma = new PrismaClient();
 
@@ -26,7 +26,7 @@ export const accountService = {
         userId,
         ...(activeOnly ? { isActive: true } : {}),
       },
-      orderBy: [{ isActive: "desc" }, { name: "asc" }],
+      orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
       include: {
         _count: {
           select: { entryAccounts: true },
@@ -57,11 +57,7 @@ export const accountService = {
     });
   },
 
-  async updateByIdAndUserId(
-    id: string,
-    userId: string,
-    data: UpdateAccountData
-  ) {
+  async updateByIdAndUserId(id: string, userId: string, data: UpdateAccountData) {
     try {
       return await prisma.account.update({
         where: { id, userId },
@@ -76,7 +72,7 @@ export const accountService = {
         },
       });
     } catch (error: any) {
-      if (error.code === "P2025") {
+      if (error.code === 'P2025') {
         return null;
       }
       throw error;
@@ -109,7 +105,7 @@ export const accountService = {
 
       return true;
     } catch (error: any) {
-      if (error.code === "P2025") {
+      if (error.code === 'P2025') {
         return false;
       }
       throw error;
@@ -142,12 +138,12 @@ export const accountService = {
         balance: true,
         type: true,
       },
-      orderBy: { balance: "desc" },
+      orderBy: { balance: 'desc' },
     });
 
     const totalBalance = accounts.reduce((sum, account) => sum + account.balance.toNumber(), 0);
 
-    return accounts.map(account => {
+    return accounts.map((account) => {
       const balance = account.balance.toNumber();
       const percentage = totalBalance > 0 ? (balance / totalBalance) * 100 : 0;
 
@@ -165,13 +161,13 @@ export const accountService = {
     id: string,
     userId: string,
     amount: number,
-    operation: "add" | "subtract" = "add"
+    operation: 'add' | 'subtract' = 'add'
   ) {
     const account = await this.getByIdAndUserId(id, userId);
     if (!account) return null;
 
     const newBalance =
-      operation === "add"
+      operation === 'add'
         ? account.balance.toNumber() + amount
         : account.balance.toNumber() - amount;
 
@@ -185,7 +181,7 @@ export const accountService = {
         type,
         isActive: true,
       },
-      orderBy: { name: "asc" },
+      orderBy: { name: 'asc' },
     });
   },
 };

@@ -72,7 +72,7 @@ export default function LoginPage() {
                 />
               </svg>
             }
-            onClick={handleGoogleSignIn}
+            onPress={handleGoogleSignIn}
           >
             Continuar con Google
           </Button>

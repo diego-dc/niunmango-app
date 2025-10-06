@@ -1,12 +1,12 @@
-import { Request, Response } from "express";
-import { budgetService } from "../services/budgetService";
+import { Request, Response } from 'express';
+import { budgetService } from '../services/budgetService';
 
 export const budgetController = {
   async getAll(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       const budgets = await budgetService.getAllByUserId(userId);
@@ -21,7 +21,7 @@ export const budgetController = {
 
       return res.json(budgetsWithProgress);
     } catch (error) {
-      return res.status(500).json({ error: "Failed to fetch budgets" });
+      return res.status(500).json({ error: 'Failed to fetch budgets' });
     }
   },
 
@@ -31,17 +31,17 @@ export const budgetController = {
       const userId = req.user?.id;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const budget = await budgetService.getByIdAndUserId(id || "", userId);
+      const budget = await budgetService.getByIdAndUserId(id || '', userId);
       if (!budget) {
-        return res.status(404).json({ error: "Budget not found" });
+        return res.status(404).json({ error: 'Budget not found' });
       }
 
       return res.json(budget);
     } catch (error) {
-      return res.status(500).json({ error: "Failed to fetch budget" });
+      return res.status(500).json({ error: 'Failed to fetch budget' });
     }
   },
 
@@ -49,7 +49,7 @@ export const budgetController = {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       const currentBudget = await budgetService.getCurrentByUserId(userId);
@@ -57,7 +57,7 @@ export const budgetController = {
       // Return null if no current budget exists - this is not an error
       return res.json(currentBudget);
     } catch (error) {
-      return res.status(500).json({ error: "Failed to fetch current budget" });
+      return res.status(500).json({ error: 'Failed to fetch current budget' });
     }
   },
 
@@ -65,7 +65,7 @@ export const budgetController = {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       const activeBudgets = await budgetService.getActiveByUserId(userId);
@@ -80,7 +80,7 @@ export const budgetController = {
 
       return res.json(budgetsWithProgress);
     } catch (error) {
-      return res.status(500).json({ error: "Failed to fetch active budgets" });
+      return res.status(500).json({ error: 'Failed to fetch active budgets' });
     }
   },
 
@@ -90,12 +90,12 @@ export const budgetController = {
       const userId = req.user?.id;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       if (!name || !startDate || !endDate) {
         return res.status(400).json({
-          error: "Name, start date, and end date are required",
+          error: 'Name, start date, and end date are required',
         });
       }
 
@@ -104,7 +104,7 @@ export const budgetController = {
 
       if (start >= end) {
         return res.status(400).json({
-          error: "End date must be after start date",
+          error: 'End date must be after start date',
         });
       }
 
@@ -118,8 +118,8 @@ export const budgetController = {
 
       return res.status(201).json(budget);
     } catch (error) {
-      console.error("Failed to create budget:", error);
-      return res.status(500).json({ error: "Failed to create budget" });
+      console.error('Failed to create budget:', error);
+      return res.status(500).json({ error: 'Failed to create budget' });
     }
   },
 
@@ -130,7 +130,7 @@ export const budgetController = {
       const userId = req.user?.id;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       const updateData: any = {};
@@ -144,7 +144,7 @@ export const budgetController = {
         updateData.startDate >= updateData.endDate
       ) {
         return res.status(400).json({
-          error: "End date must be after start date",
+          error: 'End date must be after start date',
         });
       }
 
@@ -152,19 +152,15 @@ export const budgetController = {
         updateData.budgetItems = budgetItems;
       }
 
-      const budget = await budgetService.updateByIdAndUserId(
-        id || "",
-        userId,
-        updateData
-      );
+      const budget = await budgetService.updateByIdAndUserId(id || '', userId, updateData);
       if (!budget) {
-        return res.status(404).json({ error: "Budget not found" });
+        return res.status(404).json({ error: 'Budget not found' });
       }
 
       return res.json(budget);
     } catch (error) {
-      console.error("Failed to update budget:", error);
-      return res.status(500).json({ error: "Failed to update budget" });
+      console.error('Failed to update budget:', error);
+      return res.status(500).json({ error: 'Failed to update budget' });
     }
   },
 
@@ -174,17 +170,17 @@ export const budgetController = {
       const userId = req.user?.id;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const deleted = await budgetService.deleteByIdAndUserId(id || "", userId);
+      const deleted = await budgetService.deleteByIdAndUserId(id || '', userId);
       if (!deleted) {
-        return res.status(404).json({ error: "Budget not found" });
+        return res.status(404).json({ error: 'Budget not found' });
       }
 
       return res.status(204).send();
     } catch (error) {
-      return res.status(500).json({ error: "Failed to delete budget" });
+      return res.status(500).json({ error: 'Failed to delete budget' });
     }
   },
 
@@ -194,20 +190,17 @@ export const budgetController = {
       const userId = req.user?.id;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const progress = await budgetService.getBudgetProgressByIdAndUserId(
-        id || "",
-        userId
-      );
+      const progress = await budgetService.getBudgetProgressByIdAndUserId(id || '', userId);
       if (!progress) {
-        return res.status(404).json({ error: "Budget not found" });
+        return res.status(404).json({ error: 'Budget not found' });
       }
 
       return res.json(progress);
     } catch (error) {
-      return res.status(500).json({ error: "Failed to fetch budget progress" });
+      return res.status(500).json({ error: 'Failed to fetch budget progress' });
     }
   },
 };

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { addToast } from "@heroui/toast";
 
 import { useApi } from "@/hooks/useApi";
@@ -20,7 +26,9 @@ type CategoryContextType = {
   loadCategories: () => Promise<void>;
 };
 
-const CategoryContext = createContext<CategoryContextType | undefined>(undefined);
+const CategoryContext = createContext<CategoryContextType | undefined>(
+  undefined,
+);
 
 export function CategoryProvider({ children }: { children: ReactNode }) {
   const { get, post, delete: deleteRequest, loading } = useApi();
@@ -33,8 +41,7 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
       const data = await get<Category[]>("/categories").catch(() => []);
 
       setCategories(data || []);
-    } catch (error) {
-      console.error("Error loading categories:", error);
+    } catch {
       addToast({
         title: "Error",
         description: "No se pudieron cargar las categorías.",
@@ -55,7 +62,6 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
         return newCategory;
       }
     } catch (error) {
-      console.error("Error creating category:", error);
       throw error;
     }
   };
@@ -65,7 +71,6 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
       await deleteRequest(`/categories/${id}`);
       setCategories((prev) => prev.filter((cat) => cat.id !== id));
     } catch (error) {
-      console.error("Error deleting category:", error);
       throw error;
     }
   };

@@ -52,19 +52,19 @@ export function useBudgets() {
   const loadBudgets = async () => {
     try {
       setIsLoading(true);
-      const [budgetsData, currentBudgetData, activeBudgetsData] = await Promise.all([
-        get<Budget[]>("/budgets").catch(() => []),
-        get<Budget>("/budgets/current").catch(() => null),
-        get<Budget[]>("/budgets/active").catch(() => []),
-      ]);
+      const [budgetsData, currentBudgetData, activeBudgetsData] =
+        await Promise.all([
+          get<Budget[]>("/budgets").catch(() => []),
+          get<Budget>("/budgets/current").catch(() => null),
+          get<Budget[]>("/budgets/active").catch(() => []),
+        ]);
 
       // Always set data, even if empty arrays/null
       setBudgets(budgetsData || []);
       setCurrentBudget(currentBudgetData);
       setActiveBudgets(activeBudgetsData || []);
-    } catch (error) {
+    } catch {
       // Only show error for actual API failures, not empty data
-      console.error("Error loading budgets:", error);
       addToast({
         title: "Error",
         description: "No se pudieron cargar los presupuestos.",
@@ -90,7 +90,6 @@ export function useBudgets() {
         description: "No se pudo crear el presupuesto.",
         color: "danger",
       });
-      console.error("Error creating budget:", error);
       throw error;
     }
   };
@@ -118,7 +117,6 @@ export function useBudgets() {
         description: "No se pudo actualizar el presupuesto.",
         color: "danger",
       });
-      console.error("Error updating budget:", error);
       throw error;
     }
   };
@@ -136,7 +134,6 @@ export function useBudgets() {
         description: "No se pudo eliminar el presupuesto.",
         color: "danger",
       });
-      console.error("Error deleting budget:", error);
       throw error;
     }
   };
@@ -163,7 +160,6 @@ export function useBudgets() {
         description: "No se pudo agregar la categoría al presupuesto.",
         color: "danger",
       });
-      console.error("Error adding budget item:", error);
       throw error;
     }
   };
@@ -191,7 +187,6 @@ export function useBudgets() {
         description: "No se pudo actualizar la categoría del presupuesto.",
         color: "danger",
       });
-      console.error("Error updating budget item:", error);
       throw error;
     }
   };
@@ -207,7 +202,6 @@ export function useBudgets() {
         description: "No se pudo eliminar la categoría del presupuesto.",
         color: "danger",
       });
-      console.error("Error deleting budget item:", error);
       throw error;
     }
   };

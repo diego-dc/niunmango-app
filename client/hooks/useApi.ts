@@ -20,7 +20,11 @@ export function useApi() {
       endpoint: string,
       options: ApiRequestOptions = {},
     ): Promise<T> => {
-      const { authenticated = true, silentError = false, ...fetchOptions } = options;
+      const {
+        authenticated = true,
+        silentError = false,
+        ...fetchOptions
+      } = options;
 
       setLoading(true);
 
@@ -48,7 +52,8 @@ export function useApi() {
             addToast({
               title: "Error en la solicitud",
               description:
-                error.error || "Error del servidor. Intenta de nuevo más tarde.",
+                error.error ||
+                "Error del servidor. Intenta de nuevo más tarde.",
               color: "danger",
             });
           }

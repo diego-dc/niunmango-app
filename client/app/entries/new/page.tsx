@@ -18,7 +18,7 @@ import {
   EntryType,
   getTypeIcon,
   getChipColor,
-  getTypeLabel
+  getTypeLabel,
 } from "@/utils/entryHelpers";
 import { getCurrentDateString } from "@/utils/dateHelpers";
 
@@ -256,7 +256,6 @@ export default function NewEntryPage() {
     );
   };
 
-
   if (authLoading || loadingData) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -337,7 +336,9 @@ export default function NewEntryPage() {
               </SelectItem>
               <SelectItem
                 key="TRANSFER"
-                startContent={<Icon icon={getTypeIcon("TRANSFER")} width={16} />}
+                startContent={
+                  <Icon icon={getTypeIcon("TRANSFER")} width={16} />
+                }
               >
                 Transferencia
               </SelectItem>

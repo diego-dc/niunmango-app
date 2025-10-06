@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { addToast } from "@heroui/toast";
 
 import { authService } from "@/lib/auth";
-import { addToast } from "@heroui/toast";
 
 export default function AuthCallback() {
   const router = useRouter();

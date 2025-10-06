@@ -147,7 +147,7 @@ export default function EntriesPage() {
     try {
       const data =
         await get<Array<{ id: string; name: string; type: string }>>(
-          "/accounts"
+          "/accounts",
         );
 
       setAccounts(data);
@@ -246,7 +246,7 @@ export default function EntriesPage() {
 
       const updatedEntry = await put(
         `/entries/${selectedEntry.id}`,
-        updateData
+        updateData,
       );
 
       await loadEntries(currentPage);
@@ -387,8 +387,8 @@ export default function EntriesPage() {
         ) : entries.length === 0 ? (
           <div className="text-center py-8">
             <Icon
-              icon="heroicons:document-text"
               className="mx-auto text-default-300 mb-3"
+              icon="heroicons:document-text"
               width={48}
             />
             <p className="text-default-500">No se encontraron entradas</p>
@@ -424,15 +424,23 @@ export default function EntriesPage() {
                           ${getTypeColor(entry.type)}
                           hover:scale-[1.01] transition-transform
                         `}
+                          role="button"
+                          tabIndex={0}
                           onClick={() => openEntryModal(entry)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              openEntryModal(entry);
+                            }
+                          }}
                         >
                           {/* Type Icon */}
                           <div className="flex-shrink-0">
                             <div className="w-8 h-8 rounded-full bg-current/10 flex items-center justify-center">
                               <Icon
+                                className="text-current"
                                 icon={getTypeIcon(entry.type)}
                                 width={16}
-                                className="text-current"
                               />
                             </div>
                           </div>
@@ -462,7 +470,7 @@ export default function EntriesPage() {
                       ))}
                   </div>
                 </div>
-              )
+              ),
             )}
           </div>
         )}
@@ -506,14 +514,14 @@ export default function EntriesPage() {
                       <div className="flex gap-2 flex-col">
                         <p className="text-sm text-default-500">Tipo</p>
                         <Chip
+                          className="px-2"
                           color={getChipColor(selectedEntry.type)}
                           size="md"
-                          className="px-2"
                           startContent={
                             <Icon
+                              className="mx-1"
                               icon={getTypeIcon(selectedEntry.type)}
                               width={16}
-                              className="mx-1"
                             />
                           }
                           variant="flat"
@@ -577,7 +585,7 @@ export default function EntriesPage() {
                                 {formatCurrency(entryAccount.amount)}
                               </p>
                             </div>
-                          )
+                          ),
                         )}
                       </div>
                     </div>

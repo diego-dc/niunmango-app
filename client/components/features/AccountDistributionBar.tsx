@@ -18,7 +18,7 @@ export function AccountDistributionBar({
   accounts,
 }: AccountDistributionBarProps) {
   // Colors for different account types, inspired by iOS storage colors
-  const getColorForAccount = (index: number, type: string) => {
+  const getColorForAccount = (index: number) => {
     const colors = [
       { bg: "bg-primary", text: "text-white" }, // Primary
       { bg: "bg-secondary", text: "text-white" }, // Success green
@@ -48,7 +48,7 @@ export function AccountDistributionBar({
       {/* Distribution Bar */}
       <div className="relative w-full h-8 bg-default-100 rounded-full overflow-hidden flex">
         {visibleAccounts.map((account, index) => {
-          const color = getColorForAccount(index, account.type);
+          const color = getColorForAccount(index);
 
           return (
             <div
@@ -76,7 +76,7 @@ export function AccountDistributionBar({
       {/* Legend */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {visibleAccounts.map((account, index) => {
-          const color = getColorForAccount(index, account.type);
+          const color = getColorForAccount(index);
 
           return (
             <div key={account.id} className="flex items-center gap-2">

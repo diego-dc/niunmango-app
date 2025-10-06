@@ -7,10 +7,10 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
+import { Icon } from "@iconify/react";
 
 import { Plus, Tag } from "@/components/icons";
 import { useCategories } from "@/context/CategoryContext";
-import { Icon } from "@iconify/react";
 
 export function CategoriesSection() {
   const { categories, createCategory, deleteCategory, isCreating } =
@@ -44,6 +44,7 @@ export function CategoriesSection() {
         description: "No se puede eliminar la categoría especial de ahorro.",
         color: "warning",
       });
+
       return;
     }
 
@@ -110,20 +111,20 @@ export function CategoriesSection() {
               return (
                 <Chip
                   key={category.id}
-                  color={isSavingsCategory ? "success" : "primary"}
-                  variant="flat"
-                  size="lg"
                   className="px-2"
+                  color={isSavingsCategory ? "success" : "primary"}
+                  size="lg"
                   startContent={
                     isSavingsCategory ? (
                       <Icon
-                        icon="streamline-plump:piggy-bank-solid"
                         className="w-4 h-4 mx-1"
+                        icon="streamline-plump:piggy-bank-solid"
                       />
                     ) : (
                       <Tag className="w-4 h-4 mx-1" />
                     )
                   }
+                  variant="flat"
                   onClose={
                     isSavingsCategory
                       ? undefined

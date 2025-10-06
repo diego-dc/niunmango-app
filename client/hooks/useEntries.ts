@@ -26,13 +26,14 @@ export function useEntries() {
   const loadRecentEntries = async () => {
     try {
       setIsLoading(true);
-      const entries = await get<Entry[]>("/entries/recent?limit=5").catch(() => []);
+      const entries = await get<Entry[]>("/entries/recent?limit=5").catch(
+        () => [],
+      );
 
       // Always set data, even if empty array
       setRecentEntries(entries || []);
     } catch (error) {
       // Only show error for actual API failures, not empty data
-      console.error("Error loading recent entries:", error);
       addToast({
         title: "Error",
         description: "No se pudieron cargar las entradas recientes.",

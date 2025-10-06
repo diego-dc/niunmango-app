@@ -43,7 +43,9 @@ export type AccountDistribution = {
 export function useAccounts() {
   const { get, post, put, delete: deleteRequest, loading } = useApi();
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [accountsDistribution, setAccountsDistribution] = useState<AccountDistribution[]>([]);
+  const [accountsDistribution, setAccountsDistribution] = useState<
+    AccountDistribution[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [netWorth, setNetWorth] = useState(0);
 
@@ -52,7 +54,9 @@ export function useAccounts() {
       setIsLoading(true);
       const [accountsData, netWorthData, distributionData] = await Promise.all([
         get<Account[]>("/accounts").catch(() => []),
-        get<{ netWorth: number }>("/accounts/net-worth").catch(() => ({ netWorth: 0 })),
+        get<{ netWorth: number }>("/accounts/net-worth").catch(() => ({
+          netWorth: 0,
+        })),
         get<AccountDistribution[]>("/accounts/distribution").catch(() => []),
       ]);
 
@@ -60,9 +64,8 @@ export function useAccounts() {
       setAccounts(accountsData || []);
       setNetWorth(netWorthData?.netWorth || 0);
       setAccountsDistribution(distributionData || []);
-    } catch (error) {
+    } catch {
       // Only show error for actual API failures, not empty data
-      console.error("Error loading accounts:", error);
       addToast({
         title: "Error",
         description: "No se pudieron cargar las cuentas.",
@@ -85,7 +88,6 @@ export function useAccounts() {
         return newAccount;
       }
     } catch (error) {
-      console.error("Error creating account:", error);
       throw error;
     }
   };
@@ -107,7 +109,6 @@ export function useAccounts() {
         return updatedAccount;
       }
     } catch (error) {
-      console.error("Error updating account:", error);
       throw error;
     }
   };
@@ -119,7 +120,6 @@ export function useAccounts() {
       // Update net worth
       await loadAccounts();
     } catch (error) {
-      console.error("Error deleting account:", error);
       throw error;
     }
   };

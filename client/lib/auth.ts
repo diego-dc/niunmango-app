@@ -1,3 +1,5 @@
+import { addToast } from "@heroui/toast";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export interface User {
@@ -26,9 +28,7 @@ class AuthService {
 
   setToken(token: string): void {
     this.token = token;
-    console.log("Setting token");
     if (typeof window !== "undefined") {
-      console.log("Token set");
       localStorage.setItem("auth_token", token);
     }
   }
@@ -53,8 +53,12 @@ class AuthService {
           "Content-Type": "application/json",
         },
       });
-    } catch (error) {
-      console.error("Logout error:", error);
+    } catch {
+      addToast({
+        title: "Error",
+        description: "Error al cerrar sesión. Se cerró la sesión localmente.",
+        color: "warning",
+      });
     } finally {
       this.removeToken();
     }
@@ -64,7 +68,6 @@ class AuthService {
     if (!this.token) return null;
 
     try {
-      console.log("Sending to auth me with token: ", this.token);
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: {
           Authorization: `Bearer ${this.token}`,
@@ -74,14 +77,23 @@ class AuthService {
       if (!response.ok) {
         if (response.status === 401) {
           this.removeToken();
+          addToast({
+            title: "Sesión expirada",
+            description: "Por favor inicia sesión nuevamente.",
+            color: "warning",
+          });
         }
 
         return null;
       }
 
       return await response.json();
-    } catch (error) {
-      console.error("Get current user error:", error);
+    } catch {
+      addToast({
+        title: "Error",
+        description: "No se pudo verificar la sesión.",
+        color: "danger",
+      });
 
       return null;
     }
@@ -99,15 +111,27 @@ class AuthService {
         body: JSON.stringify({ token: this.token }),
       });
 
-      if (!response.ok) return false;
+      if (!response.ok) {
+        addToast({
+          title: "Sesión expirada",
+          description: "Por favor inicia sesión nuevamente.",
+          color: "warning",
+        });
+
+        return false;
+      }
 
       const { token } = await response.json();
 
       this.setToken(token);
 
       return true;
-    } catch (error) {
-      console.error("Refresh token error:", error);
+    } catch {
+      addToast({
+        title: "Error",
+        description: "No se pudo renovar la sesión.",
+        color: "danger",
+      });
 
       return false;
     }

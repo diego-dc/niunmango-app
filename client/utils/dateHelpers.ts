@@ -4,6 +4,7 @@
  */
 export function formatDateLong(dateString: string): string {
   const date = new Date(dateString);
+
   return date.toLocaleDateString("es-ES", {
     weekday: "long",
     day: "numeric",
@@ -29,6 +30,7 @@ export function formatDateShort(dateString: string): string {
  */
 export function formatDateMedium(dateString: string): string {
   const date = new Date(dateString);
+
   return date.toLocaleDateString("es-ES", {
     day: "numeric",
     month: "long",
@@ -49,6 +51,7 @@ export function getCurrentDateString(): string {
 export function isSameDay(date1: string | Date, date2: string | Date): boolean {
   const d1 = new Date(date1);
   const d2 = new Date(date2);
+
   return d1.toDateString() === d2.toDateString();
 }
 
@@ -57,16 +60,21 @@ export function isSameDay(date1: string | Date, date2: string | Date): boolean {
  */
 export function groupByDate<T>(
   items: T[],
-  getDate: (item: T) => string
+  getDate: (item: T) => string,
 ): Record<string, T[]> {
-  return items.reduce((groups, item) => {
-    const dateKey = new Date(getDate(item)).toDateString();
-    if (!groups[dateKey]) {
-      groups[dateKey] = [];
-    }
-    groups[dateKey].push(item);
-    return groups;
-  }, {} as Record<string, T[]>);
+  return items.reduce(
+    (groups, item) => {
+      const dateKey = new Date(getDate(item)).toDateString();
+
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(item);
+
+      return groups;
+    },
+    {} as Record<string, T[]>,
+  );
 }
 
 /**
@@ -74,7 +82,7 @@ export function groupByDate<T>(
  * Also sorts entries within each group if they have a createdAt field
  */
 export function sortGroupedDates<T>(
-  groupedItems: Record<string, T[]>
+  groupedItems: Record<string, T[]>,
 ): [string, T[]][] {
   return Object.entries(groupedItems)
     .sort(([dateKeyA], [dateKeyB]) => {
@@ -84,10 +92,14 @@ export function sortGroupedDates<T>(
       // Sort items within each group by createdAt if available
       const sortedItems = [...items].sort((a: any, b: any) => {
         if (a.createdAt && b.createdAt) {
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         }
+
         return 0;
       });
+
       return [dateKey, sortedItems] as [string, T[]];
     });
 }

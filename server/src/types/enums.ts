@@ -1,19 +1,19 @@
 // Financial entry types
 export enum EntryType {
-  EXPENSE = "EXPENSE",
-  INCOME = "INCOME",
-  TRANSFER = "TRANSFER",
+  EXPENSE = 'EXPENSE',
+  INCOME = 'INCOME',
+  TRANSFER = 'TRANSFER',
 }
 
 // Account types for different financial accounts
 export enum AccountType {
-  CHECKING = "CHECKING",
-  CUENTA_RUT = "CUENTA_RUT",
-  CUENTA_VISTA = "CUENTA_VISTA",
-  BILLETERA_DIGITAL = "BILLETERA_DIGITAL",
-  SAVINGS = "SAVINGS",
-  INVESTMENT = "INVESTMENT",
-  CASH = "CASH",
+  CHECKING = 'CHECKING',
+  CUENTA_RUT = 'CUENTA_RUT',
+  CUENTA_VISTA = 'CUENTA_VISTA',
+  BILLETERA_DIGITAL = 'BILLETERA_DIGITAL',
+  SAVINGS = 'SAVINGS',
+  INVESTMENT = 'INVESTMENT',
+  CASH = 'CASH',
 }
 
 // Type guards for runtime validation
@@ -29,11 +29,11 @@ export const isValidAccountType = (value: string): value is AccountType => {
 export const getEntryTypeLabel = (type: EntryType): string => {
   switch (type) {
     case EntryType.EXPENSE:
-      return "Gasto";
+      return 'Gasto';
     case EntryType.INCOME:
-      return "Ingreso";
+      return 'Ingreso';
     case EntryType.TRANSFER:
-      return "Transferencia";
+      return 'Transferencia';
     default:
       return type;
   }
@@ -42,19 +42,19 @@ export const getEntryTypeLabel = (type: EntryType): string => {
 export const getAccountTypeLabel = (type: AccountType): string => {
   switch (type) {
     case AccountType.CHECKING:
-      return "Cuenta Corriente";
+      return 'Cuenta Corriente';
     case AccountType.CUENTA_RUT:
-      return "Cuenta Rut";
+      return 'Cuenta Rut';
     case AccountType.CUENTA_VISTA:
-      return "Cuenta Vista";
+      return 'Cuenta Vista';
     case AccountType.BILLETERA_DIGITAL:
-      return "Billetera Digital";
+      return 'Billetera Digital';
     case AccountType.SAVINGS:
-      return "Cuenta de Ahorro";
+      return 'Cuenta de Ahorro';
     case AccountType.INVESTMENT:
-      return "Cuenta de Inversión";
+      return 'Cuenta de Inversión';
     case AccountType.CASH:
-      return "Efectivo";
+      return 'Efectivo';
     default:
       return type;
   }

@@ -26,11 +26,11 @@ import {
   useDisclosure,
 } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
+import { Icon } from "@iconify/react";
 
 import { Plus, Trash } from "@/components/icons";
 import { useAccounts, AccountType } from "@/hooks/useAccounts";
 import { formatCurrency } from "@/lib/formatters";
-import { Icon } from "@iconify/react";
 
 export function AccountsSection() {
   const {
@@ -118,7 +118,12 @@ export function AccountsSection() {
         balance: parseFloat(newAccount.balance) || 0,
         isSavingsAccount: newAccount.isSavingsAccount,
       });
-      setNewAccount({ name: "", type: "CHECKING", balance: "0", isSavingsAccount: false });
+      setNewAccount({
+        name: "",
+        type: "CHECKING",
+        balance: "0",
+        isSavingsAccount: false,
+      });
       onClose();
       addToast({
         title: "Éxito",
@@ -202,8 +207,8 @@ export function AccountsSection() {
         <CardHeader className="flex flex-col gap-3">
           <div className="flex gap-2 items-center justify-start w-full">
             <Icon
-              icon="majesticons:creditcard"
               className="w-5 h-5 text-primary"
+              icon="majesticons:creditcard"
             />
             <p className="text-lg font-semibold">Cuentas y Fondos</p>
           </div>
@@ -227,9 +232,9 @@ export function AccountsSection() {
           ) : accounts.length === 0 ? (
             <div className="text-center flex flex-col items-center py-8 text-default-500">
               <Icon
-                icon="majesticons:creditcard"
                 className="text-gray-500"
                 height={46}
+                icon="majesticons:creditcard"
               />
               <p className="text-lg mb-2">Sin cuentas</p>
               <p>
@@ -300,7 +305,7 @@ export function AccountsSection() {
                             confirmToggleStatus(
                               account.id,
                               account.name,
-                              account.isActive
+                              account.isActive,
                             )
                           }
                         >
@@ -382,7 +387,8 @@ export function AccountsSection() {
                     <div className="flex flex-col">
                       <span className="text-small">Destinar para ahorros</span>
                       <span className="text-tiny text-default-400">
-                        Los transfers a esta cuenta se categorizarán automáticamente como "Ahorro"
+                        Los transfers a esta cuenta se categorizarán
+                        automáticamente como &quot;Ahorro&quot;
                       </span>
                     </div>
                   </Checkbox>

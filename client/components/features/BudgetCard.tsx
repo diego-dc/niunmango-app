@@ -4,6 +4,7 @@ import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
 import { Progress } from "@heroui/progress";
 import { Chip } from "@heroui/chip";
 import { Icon } from "@iconify/react";
+
 import { formatCurrency } from "@/lib/formatters";
 import { Budget } from "@/hooks/useBudgets";
 import { truncateText } from "@/utils/text";
@@ -17,6 +18,7 @@ export function BudgetCard({ budget, onClick }: BudgetCardProps) {
   const getProgressColor = (percentage: number) => {
     if (percentage >= 90) return "danger";
     if (percentage >= 75) return "warning";
+
     return "success";
   };
 
@@ -31,18 +33,18 @@ export function BudgetCard({ budget, onClick }: BudgetCardProps) {
 
   return (
     <Card
-      className="w-80 min-w-80 cursor-pointer hover:scale-[1.02] transition-transform"
       isPressable
+      className="w-80 min-w-80 cursor-pointer hover:scale-[1.02] transition-transform"
       onPress={onClick}
     >
       <CardHeader className="flex flex-col items-start gap-2 p-4">
         <div className="flex flex-col items-start w-full gap-3">
           <Chip
-            size="sm"
-            variant="bordered"
-            color="primary"
             className="px-2"
-            startContent={<Icon icon="majesticons:calendar" className="mx-1" />}
+            color="primary"
+            size="sm"
+            startContent={<Icon className="mx-1" icon="majesticons:calendar" />}
+            variant="bordered"
           >
             {formatDateRange(budget.startDate, budget.endDate)}
           </Chip>
@@ -62,9 +64,9 @@ export function BudgetCard({ budget, onClick }: BudgetCardProps) {
           </div>
 
           <Progress
-            value={budget.overallPercentage}
             color={getProgressColor(budget.overallPercentage)}
             size="sm"
+            value={budget.overallPercentage}
           />
 
           <div className="grid grid-cols-2 gap-3 mt-2">
@@ -100,16 +102,16 @@ export function BudgetCard({ budget, onClick }: BudgetCardProps) {
       <CardFooter className="p-4 pt-0">
         <div className="flex justify-between items-center w-full">
           <Chip
-            size="md"
-            variant="bordered"
-            startContent={<Icon icon="heroicons:folder" className="mx-1" />}
             className="p-2"
+            size="md"
+            startContent={<Icon className="mx-1" icon="heroicons:folder" />}
+            variant="bordered"
           >
             {budget.budgetItems.length} categorías
           </Chip>
           <Icon
-            icon="heroicons:chevron-right"
             className="text-default-400"
+            icon="heroicons:chevron-right"
             width={16}
           />
         </div>

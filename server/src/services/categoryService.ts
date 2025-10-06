@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -18,8 +18,8 @@ export const categoryService = {
       const existingByName = await prisma.category.findFirst({
         where: {
           userId,
-          name: "Ahorro"
-        }
+          name: 'Ahorro',
+        },
       });
 
       if (existingByName) {
@@ -29,8 +29,8 @@ export const categoryService = {
       // Try to create savings category
       return await prisma.category.create({
         data: {
-          name: "Ahorro",
-          userId
+          name: 'Ahorro',
+          userId,
         },
         include: {
           _count: {
@@ -40,10 +40,10 @@ export const categoryService = {
       });
     } catch (error: any) {
       // If creation fails (e.g., unique constraint), just return null
-      if (error.code === "P2002") {
+      if (error.code === 'P2002') {
         // Duplicate entry, try to find existing
         return await prisma.category.findFirst({
-          where: { userId, name: "Ahorro" }
+          where: { userId, name: 'Ahorro' },
         });
       }
       throw error;
@@ -60,7 +60,7 @@ export const categoryService = {
       // Get all categories with fallback ordering
       const categories = await prisma.category.findMany({
         where: { userId },
-        orderBy: { name: "asc" }, // Simple ordering for now
+        orderBy: { name: 'asc' }, // Simple ordering for now
         include: {
           _count: {
             select: { entries: true },
@@ -71,7 +71,7 @@ export const categoryService = {
       return categories;
     } catch (error) {
       // If this fails, return empty array instead of crashing
-      console.error("Error fetching categories:", error);
+      console.error('Error fetching categories:', error);
       return [];
     }
   },
@@ -98,11 +98,7 @@ export const categoryService = {
     });
   },
 
-  async updateByIdAndUserId(
-    id: string,
-    _userId: string,
-    data: UpdateCategoryData
-  ) {
+  async updateByIdAndUserId(id: string, _userId: string, data: UpdateCategoryData) {
     try {
       return await prisma.category.update({
         where: { id },
@@ -114,7 +110,7 @@ export const categoryService = {
         },
       });
     } catch (error: any) {
-      if (error.code === "P2025") {
+      if (error.code === 'P2025') {
         return null;
       }
       throw error;
@@ -125,11 +121,11 @@ export const categoryService = {
     try {
       // Check if this is the savings category by name
       const category = await prisma.category.findFirst({
-        where: { id, userId }
+        where: { id, userId },
       });
 
-      if (category?.name === "Ahorro") {
-        throw new Error("Cannot delete special categories");
+      if (category?.name === 'Ahorro') {
+        throw new Error('Cannot delete special categories');
       }
 
       await prisma.category.delete({
@@ -137,7 +133,7 @@ export const categoryService = {
       });
       return true;
     } catch (error: any) {
-      if (error.code === "P2025") {
+      if (error.code === 'P2025') {
         return false;
       }
       throw error;
@@ -152,7 +148,7 @@ export const categoryService = {
           select: { entries: true },
         },
       },
-      orderBy: { name: "asc" },
+      orderBy: { name: 'asc' },
     });
   },
 };

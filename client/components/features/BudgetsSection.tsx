@@ -20,11 +20,12 @@ import {
   useDisclosure,
 } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
+import { Icon } from "@iconify/react";
+
 import { Plus, Trash, Target, Edit3 } from "@/components/icons";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useCategories } from "@/context/CategoryContext";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
-import { Icon } from "@iconify/react";
 
 export function BudgetsSection() {
   const {
@@ -330,8 +331,8 @@ export function BudgetsSection() {
                                   <div className="flex items-center gap-2">
                                     {isSavingsCategory && (
                                       <Icon
-                                        icon="streamline-plump:piggy-bank-solid"
                                         className="w-auto h-4 text-success-600"
+                                        icon="streamline-plump:piggy-bank-solid"
                                       />
                                     )}
                                     <span
@@ -388,12 +389,12 @@ export function BudgetsSection() {
               {totalPages > 1 && (
                 <div className="flex justify-center mt-4">
                   <Pagination
-                    total={totalPages}
-                    page={currentPage}
-                    onChange={setCurrentPage}
                     showControls
                     showShadow
                     color="primary"
+                    page={currentPage}
+                    total={totalPages}
+                    onChange={setCurrentPage}
                   />
                 </div>
               )}

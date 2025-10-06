@@ -1,10 +1,11 @@
 "use client";
 
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
-import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Card, CardBody } from "@heroui/card";
 import { Progress } from "@heroui/progress";
 import { Chip } from "@heroui/chip";
 import { Icon } from "@iconify/react";
+
 import { formatCurrency } from "@/lib/formatters";
 import { Budget } from "@/hooks/useBudgets";
 
@@ -24,6 +25,7 @@ export function BudgetDetailsModal({
   const getProgressColor = (percentage: number) => {
     if (percentage >= 90) return "danger";
     if (percentage >= 75) return "warning";
+
     return "success";
   };
 
@@ -40,35 +42,36 @@ export function BudgetDetailsModal({
     const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
     return diffDays;
   };
 
   const sortedBudgetItems = [...budget.budgetItems].sort(
-    (a, b) => b.percentage - a.percentage
+    (a, b) => b.percentage - a.percentage,
   );
 
   const daysRemaining = getDaysRemaining();
 
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size="2xl"
-      scrollBehavior="inside"
       classNames={{
         header: "border-b border-divider",
         footer: "border-t border-divider",
       }}
+      isOpen={isOpen}
+      scrollBehavior="inside"
+      size="2xl"
+      onClose={onClose}
     >
       <ModalContent>
         <ModalHeader className="flex flex-col gap-3">
           <div className="flex flex-col items-start gap-2">
             <Chip
-              size="md"
-              variant="flat"
               className="px-2"
               color={daysRemaining > 0 ? "success" : "danger"}
-              startContent={<Icon icon="heroicons:calendar" className="mx-1" />}
+              size="md"
+              startContent={<Icon className="mx-1" icon="heroicons:calendar" />}
+              variant="flat"
             >
               {daysRemaining > 0
                 ? `${daysRemaining} días restantes`
@@ -98,10 +101,10 @@ export function BudgetDetailsModal({
               </div>
 
               <Progress
-                value={budget.overallPercentage}
+                showValueLabel
                 color={getProgressColor(budget.overallPercentage)}
                 size="lg"
-                showValueLabel
+                value={budget.overallPercentage}
               />
 
               <div className="grid grid-cols-3 gap-4 mt-4">
@@ -139,14 +142,14 @@ export function BudgetDetailsModal({
               Desglose por Categoría
             </h3>
             <div className="space-y-4">
-              {sortedBudgetItems.map((item, index) => (
+              {sortedBudgetItems.map((item, _index) => (
                 <Card key={item.id} className="border border-divider">
                   <CardBody className="p-4">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-2">
                         <Icon
-                          icon="heroicons:folder"
                           className="text-primary"
+                          icon="heroicons:folder"
                           width={20}
                         />
                         <span className="font-medium">
@@ -154,19 +157,19 @@ export function BudgetDetailsModal({
                         </span>
                       </div>
                       <Chip
+                        color={getProgressColor(item.percentage)}
                         size="sm"
                         variant="flat"
-                        color={getProgressColor(item.percentage)}
                       >
                         {item.percentage.toFixed(1)}%
                       </Chip>
                     </div>
 
                     <Progress
-                      value={item.percentage}
+                      className="mb-3"
                       color={getProgressColor(item.percentage)}
                       size="sm"
-                      className="mb-3"
+                      value={item.percentage}
                     />
 
                     <div className="grid grid-cols-3 gap-2 text-sm">
@@ -193,7 +196,7 @@ export function BudgetDetailsModal({
                           }`}
                         >
                           {formatCurrency(
-                            Number(item.budgetedAmount) - Number(item.spent)
+                            Number(item.budgetedAmount) - Number(item.spent),
                           )}
                         </p>
                       </div>
@@ -207,8 +210,8 @@ export function BudgetDetailsModal({
           {budget.budgetItems.length === 0 && (
             <div className="text-center py-8">
               <Icon
-                icon="heroicons:folder-open"
                 className="mx-auto text-default-300 mb-3"
+                icon="heroicons:folder-open"
                 width={48}
               />
               <p className="text-default-500">

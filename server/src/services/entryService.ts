@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import { EntryType } from "../types/enums";
+import { PrismaClient } from '@prisma/client';
+import { EntryType } from '../types/enums';
 
 const prisma = new PrismaClient();
 
@@ -59,7 +59,7 @@ export const entryService = {
         where,
         skip: offset,
         take: limit,
-        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+        orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
         include: {
           category: true,
           entryAccounts: {
@@ -101,9 +101,7 @@ export const entryService = {
       // Auto-assign "Ahorro" category if it's a transfer to a savings account
       if (data.type === EntryType.TRANSFER && data.accountEntries.length > 0) {
         // Find the destination account (the one with positive amount)
-        const destinationAccountEntry = data.accountEntries.find(
-          (ae) => ae.amount > 0
-        );
+        const destinationAccountEntry = data.accountEntries.find((ae) => ae.amount > 0);
 
         if (destinationAccountEntry) {
           const destinationAccount = await tx.account.findUnique({
@@ -115,7 +113,7 @@ export const entryService = {
             const savingsCategory = await tx.category.findFirst({
               where: {
                 userId: data.userId,
-                name: "Ahorro",
+                name: 'Ahorro',
               },
             });
 
@@ -214,14 +212,12 @@ export const entryService = {
             });
           } else {
             // For INCOME/EXPENSE, use the traditional logic
-            const multiplier =
-              existingEntry.type === EntryType.EXPENSE ? 1 : -1;
+            const multiplier = existingEntry.type === EntryType.EXPENSE ? 1 : -1;
             await tx.account.update({
               where: { id: existingAccountEntry.accountId },
               data: {
                 balance: {
-                  increment:
-                    existingAccountEntry.amount.toNumber() * multiplier,
+                  increment: existingAccountEntry.amount.toNumber() * multiplier,
                 },
               },
             });
@@ -243,9 +239,7 @@ export const entryService = {
         data.accountEntries.length > 0
       ) {
         // Find the destination account (the one with positive amount)
-        const destinationAccountEntry = data.accountEntries.find(
-          (ae) => ae.amount > 0
-        );
+        const destinationAccountEntry = data.accountEntries.find((ae) => ae.amount > 0);
 
         if (destinationAccountEntry) {
           const destinationAccount = await tx.account.findUnique({
@@ -257,7 +251,7 @@ export const entryService = {
             const savingsCategory = await tx.category.findFirst({
               where: {
                 userId: userId,
-                name: "Ahorro",
+                name: 'Ahorro',
               },
             });
 
@@ -403,12 +397,7 @@ export const entryService = {
     };
   },
 
-  async getByCategory(
-    userId: string,
-    categoryId: string,
-    startDate?: Date,
-    endDate?: Date
-  ) {
+  async getByCategory(userId: string, categoryId: string, startDate?: Date, endDate?: Date) {
     const where: any = { userId, categoryId };
 
     if (startDate || endDate) {
@@ -419,7 +408,7 @@ export const entryService = {
 
     return await prisma.entry.findMany({
       where,
-      orderBy: { date: "desc" },
+      orderBy: { date: 'desc' },
       include: {
         category: true,
         entryAccounts: {
@@ -435,7 +424,7 @@ export const entryService = {
     return await prisma.entry.findMany({
       where: { userId },
       take: limit,
-      orderBy: { date: "desc" },
+      orderBy: { date: 'desc' },
       include: {
         category: true,
         entryAccounts: {

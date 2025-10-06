@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -19,18 +19,18 @@ export const budgetItemService = {
       where: {
         budgetId,
         budget: {
-          userId
-        }
+          userId,
+        },
       },
       include: {
         category: true,
-        budget: true
+        budget: true,
       },
       orderBy: {
         category: {
-          name: "asc"
-        }
-      }
+          name: 'asc',
+        },
+      },
     });
   },
 
@@ -39,13 +39,13 @@ export const budgetItemService = {
       where: {
         id,
         budget: {
-          userId
-        }
+          userId,
+        },
       },
       include: {
         category: true,
-        budget: true
-      }
+        budget: true,
+      },
     });
   },
 
@@ -53,24 +53,24 @@ export const budgetItemService = {
     const budget = await prisma.budget.findFirst({
       where: {
         id: data.budgetId,
-        userId: data.userId
-      }
+        userId: data.userId,
+      },
     });
 
     if (!budget) {
-      throw new Error("Budget not found or access denied");
+      throw new Error('Budget not found or access denied');
     }
 
     return await prisma.budgetItem.create({
       data: {
         budgetId: data.budgetId,
         categoryId: data.categoryId,
-        budgetedAmount: data.budgetedAmount
+        budgetedAmount: data.budgetedAmount,
       },
       include: {
         category: true,
-        budget: true
-      }
+        budget: true,
+      },
     });
   },
 
@@ -84,11 +84,11 @@ export const budgetItemService = {
         data,
         include: {
           category: true,
-          budget: true
-        }
+          budget: true,
+        },
       });
     } catch (error: any) {
-      if (error.code === "P2025") {
+      if (error.code === 'P2025') {
         return null;
       }
       throw error;
@@ -101,11 +101,11 @@ export const budgetItemService = {
       if (!existingItem) return false;
 
       await prisma.budgetItem.delete({
-        where: { id }
+        where: { id },
       });
       return true;
     } catch (error: any) {
-      if (error.code === "P2025") {
+      if (error.code === 'P2025') {
         return false;
       }
       throw error;
@@ -123,27 +123,28 @@ export const budgetItemService = {
         type: 'EXPENSE',
         date: {
           gte: budgetItem.budget.startDate,
-          lte: budgetItem.budget.endDate
-        }
+          lte: budgetItem.budget.endDate,
+        },
       },
       _sum: {
-        amount: true
+        amount: true,
       },
-      _count: true
+      _count: true,
     });
 
     const spent = spentResult._sum.amount || 0;
     const remaining = Number(budgetItem.budgetedAmount) - Number(spent);
-    const percentage = Number(budgetItem.budgetedAmount) > 0 
-      ? (Number(spent) / Number(budgetItem.budgetedAmount)) * 100 
-      : 0;
+    const percentage =
+      Number(budgetItem.budgetedAmount) > 0
+        ? (Number(spent) / Number(budgetItem.budgetedAmount)) * 100
+        : 0;
 
     return {
       ...budgetItem,
       spent,
       remaining,
       percentage: Math.round(percentage * 100) / 100,
-      transactionCount: spentResult._count
+      transactionCount: spentResult._count,
     };
-  }
+  },
 };

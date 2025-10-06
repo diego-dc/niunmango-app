@@ -1,22 +1,17 @@
-import passport from "passport";
-import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
-import { PrismaClient } from "@prisma/client";
+import passport from 'passport';
+import { Strategy as GoogleStrategy, Profile } from 'passport-google-oauth20';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 passport.use(
   new GoogleStrategy(
     {
-      clientID: process.env["GOOGLE_CLIENT_ID"]!,
-      clientSecret: process.env["GOOGLE_CLIENT_SECRET"]!,
-      callbackURL: process.env["GOOGLE_REDIRECT_URI"]!,
+      clientID: process.env['GOOGLE_CLIENT_ID']!,
+      clientSecret: process.env['GOOGLE_CLIENT_SECRET']!,
+      callbackURL: process.env['GOOGLE_REDIRECT_URI']!,
     },
-    async (
-      _accessToken: string,
-      _refreshToken: string,
-      profile: Profile,
-      done
-    ) => {
+    async (_accessToken: string, _refreshToken: string, profile: Profile, done) => {
       try {
         // Check if user already exists
         let user = await prisma.user.findUnique({
@@ -37,7 +32,7 @@ passport.use(
 
         // Check if user exists by email
         const existingUserByEmail = await prisma.user.findUnique({
-          where: { email: profile.emails?.[0]?.value || "" },
+          where: { email: profile.emails?.[0]?.value || '' },
         });
 
         if (existingUserByEmail) {
@@ -56,14 +51,14 @@ passport.use(
         user = await prisma.user.create({
           data: {
             googleId: profile.id,
-            email: profile.emails?.[0]?.value || "",
+            email: profile.emails?.[0]?.value || '',
             name: profile.displayName,
           },
         });
 
         return done(null, user);
       } catch (error) {
-        console.error("Error in Google OAuth strategy:", error);
+        console.error('Error in Google OAuth strategy:', error);
         return done(error, false);
       }
     }

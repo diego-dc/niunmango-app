@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
+
 import { BudgetCard } from "./BudgetCard";
+
 import { Budget } from "@/hooks/useBudgets";
 
 interface BudgetCarouselProps {
@@ -16,10 +17,7 @@ export function BudgetCarousel({
   onBudgetClick,
 }: BudgetCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isScrolling, setIsScrolling] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const startXRef = useRef<number>(0);
-  const scrollLeftRef = useRef<number>(0);
 
   const cardWidth = 320; // 320px = w-80 + gap
   const maxIndex = Math.max(0, budgets.length - 1);
@@ -38,94 +36,46 @@ export function BudgetCarousel({
     setCurrentIndex(targetIndex);
   };
 
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      scrollToIndex(currentIndex - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentIndex < maxIndex) {
-      scrollToIndex(currentIndex + 1);
-    }
-  };
-
-  // Touch/Mouse handlers for swipe functionality
-  const handleStart = (clientX: number) => {
-    setIsScrolling(true);
-    startXRef.current = clientX;
-    scrollLeftRef.current = containerRef.current?.scrollLeft || 0;
-  };
-
-  const handleMove = (clientX: number) => {
-    if (!isScrolling || !containerRef.current) return;
-
-    const x = clientX;
-    const walk = (startXRef.current - x) * 2; // Multiply for faster scroll
-    containerRef.current.scrollLeft = scrollLeftRef.current + walk;
-  };
-
-  const handleEnd = () => {
-    if (!isScrolling || !containerRef.current) return;
-
-    setIsScrolling(false);
-
-    // Snap to nearest card
-    const scrollLeft = containerRef.current.scrollLeft;
-    const newIndex = Math.round(scrollLeft / cardWidth);
-    scrollToIndex(newIndex);
-  };
-
-  // Mouse events
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    handleStart(e.clientX);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    handleMove(e.clientX);
-  };
-
-  const handleMouseUp = () => {
-    handleEnd();
-  };
-
-  // Touch events
-  const handleTouchStart = (e: React.TouchEvent) => {
-    handleStart(e.touches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    handleMove(e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    handleEnd();
-  };
-
-  // Update current index on scroll (for manual scrolling)
+  // Update current index based on which card is visible
   useEffect(() => {
     const container = containerRef.current;
+
     if (!container) return;
 
-    const handleScroll = () => {
-      if (isScrolling) return; // Don't update during programmatic scrolling
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            const cards = Array.from(container.children);
+            const index = cards.indexOf(entry.target);
 
-      const scrollLeft = container.scrollLeft;
-      const newIndex = Math.round(scrollLeft / cardWidth);
-      setCurrentIndex(newIndex);
+            if (index !== -1) {
+              setCurrentIndex(index);
+            }
+          }
+        });
+      },
+      {
+        root: container,
+        threshold: 0.5,
+      },
+    );
+
+    Array.from(container.children).forEach((child) => {
+      observer.observe(child);
+    });
+
+    return () => {
+      observer.disconnect();
     };
-
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [cardWidth, isScrolling]);
+  }, [budgets]);
 
   if (budgets.length === 0) {
     return (
       <div className="text-center py-8">
         <Icon
-          icon="heroicons:document-text"
           className="mx-auto text-default-300 mb-3"
+          icon="heroicons:document-text"
           width={48}
         />
         <p className="text-default-500">No hay presupuestos activos</p>
@@ -138,20 +88,15 @@ export function BudgetCarousel({
       {/* Carousel Container */}
       <div
         ref={containerRef}
+        aria-label="Budget carousel"
         className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth"
+        role="region"
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
-        {budgets.map((budget, index) => (
+        {budgets.map((budget, _index) => (
           <div key={budget.id} className="flex-shrink-0 snap-start">
             <BudgetCard budget={budget} onClick={() => onBudgetClick(budget)} />
           </div>
@@ -164,9 +109,11 @@ export function BudgetCarousel({
           {budgets.map((_, index) => (
             <button
               key={index}
+              aria-label={`Go to budget ${index + 1}`}
               className={`w-2 h-2 rounded-full transition-colors ${
                 index === currentIndex ? "bg-primary" : "bg-default-300"
               }`}
+              type="button"
               onClick={() => scrollToIndex(index)}
             />
           ))}

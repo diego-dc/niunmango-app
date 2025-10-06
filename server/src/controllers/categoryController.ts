@@ -1,19 +1,19 @@
-import { Request, Response } from "express";
-import { categoryService } from "../services/categoryService";
+import { Request, Response } from 'express';
+import { categoryService } from '../services/categoryService';
 
 export const categoryController = {
   async getAll(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       const categories = await categoryService.getAllByUserId(userId);
       return res.json(categories);
     } catch (error) {
-      console.error("Error fetching categories:", error);
-      return res.status(500).json({ error: "Failed to fetch categories" });
+      console.error('Error fetching categories:', error);
+      return res.status(500).json({ error: 'Failed to fetch categories' });
     }
   },
 
@@ -23,17 +23,17 @@ export const categoryController = {
       const userId = req.user?.id;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const category = await categoryService.getByIdAndUserId(id || "", userId);
+      const category = await categoryService.getByIdAndUserId(id || '', userId);
       if (!category) {
-        return res.status(404).json({ error: "Category not found" });
+        return res.status(404).json({ error: 'Category not found' });
       }
 
       return res.json(category);
     } catch (error) {
-      return res.status(500).json({ error: "Failed to fetch category" });
+      return res.status(500).json({ error: 'Failed to fetch category' });
     }
   },
 
@@ -43,20 +43,20 @@ export const categoryController = {
       const userId = req.user?.id;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       if (!name) {
-        return res.status(400).json({ error: "Name is required" });
+        return res.status(400).json({ error: 'Name is required' });
       }
 
       const category = await categoryService.create({ name, userId });
       return res.status(201).json(category);
     } catch (error: any) {
-      if (error.code === "P2002") {
-        return res.status(400).json({ error: "Category name already exists" });
+      if (error.code === 'P2002') {
+        return res.status(400).json({ error: 'Category name already exists' });
       }
-      return res.status(500).json({ error: "Failed to create category" });
+      return res.status(500).json({ error: 'Failed to create category' });
     }
   },
 
@@ -67,30 +67,26 @@ export const categoryController = {
       const userId = req.user?.id;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       if (!name) {
-        return res.status(400).json({ error: "Name is required" });
+        return res.status(400).json({ error: 'Name is required' });
       }
 
-      const category = await categoryService.updateByIdAndUserId(
-        id || "",
-        userId,
-        {
-          name,
-        }
-      );
+      const category = await categoryService.updateByIdAndUserId(id || '', userId, {
+        name,
+      });
       if (!category) {
-        return res.status(404).json({ error: "Category not found" });
+        return res.status(404).json({ error: 'Category not found' });
       }
 
       return res.json(category);
     } catch (error: any) {
-      if (error.code === "P2002") {
-        return res.status(400).json({ error: "Category name already exists" });
+      if (error.code === 'P2002') {
+        return res.status(400).json({ error: 'Category name already exists' });
       }
-      return res.status(500).json({ error: "Failed to update category" });
+      return res.status(500).json({ error: 'Failed to update category' });
     }
   },
 
@@ -100,20 +96,17 @@ export const categoryController = {
       const userId = req.user?.id;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const deleted = await categoryService.deleteByIdAndUserId(
-        id || "",
-        userId
-      );
+      const deleted = await categoryService.deleteByIdAndUserId(id || '', userId);
       if (!deleted) {
-        return res.status(404).json({ error: "Category not found" });
+        return res.status(404).json({ error: 'Category not found' });
       }
 
       return res.status(204).send();
     } catch (error) {
-      return res.status(500).json({ error: "Failed to delete category" });
+      return res.status(500).json({ error: 'Failed to delete category' });
     }
   },
 };

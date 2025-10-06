@@ -27,7 +27,7 @@ interface Stats {
 }
 
 export default function DashboardPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { isLoading: authLoading } = useAuth();
 
   const { get, loading } = useApi();
   const { activeBudgets } = useBudgets();
@@ -50,8 +50,9 @@ export default function DashboardPage() {
           savings: { total: 0, count: 0 },
           netIncome: 0,
         }));
+
         setStats(statsData);
-      } catch (error) {
+      } catch {
         // Only show error for actual API failures, not empty data
         addToast({
           title: "Error",
@@ -88,10 +89,10 @@ export default function DashboardPage() {
           <div className="flex items-start gap-2 flex-1 flex-col">
             <div className="flex gap-2 items-center">
               <Icon
-                icon="heroicons:calendar-days"
-                height={32}
-                width={32}
                 className="text-primary"
+                height={32}
+                icon="heroicons:calendar-days"
+                width={32}
               />
               <h1 className="text-xl font-bold">
                 {new Date().toLocaleDateString("es-ES", {
@@ -112,11 +113,11 @@ export default function DashboardPage() {
           <Button
             as={NextLink}
             className="font-sm flex flex-col h-fit p-4"
-            variant="ghost"
             href="/settings"
             size="lg"
+            variant="ghost"
           >
-            <Icon icon="material-symbols:settings-rounded" height={32} />
+            <Icon height={32} icon="material-symbols:settings-rounded" />
             Configuraciones
           </Button>
         </div>
@@ -194,7 +195,7 @@ export default function DashboardPage() {
           variant="bordered"
           onPress={() => router.push("/entries/new?type=INCOME")}
         >
-          <Icon icon={"game-icons:receive-money"} height={24} />
+          <Icon height={24} icon={"game-icons:receive-money"} />
           <span className="text-small">Ingreso</span>
         </Button>
 
@@ -204,7 +205,7 @@ export default function DashboardPage() {
           variant="bordered"
           onPress={() => router.push("/entries/new?type=EXPENSE")}
         >
-          <Icon icon={"game-icons:pay-money"} height={24} />
+          <Icon height={24} icon={"game-icons:pay-money"} />
           <span className="text-small">Gasto</span>
         </Button>
 
@@ -214,7 +215,7 @@ export default function DashboardPage() {
           variant="bordered"
           onPress={() => router.push("/entries/new?type=TRANSFER")}
         >
-          <Icon icon={"hugeicons:money-exchange-03"} height={24} />
+          <Icon height={24} icon={"hugeicons:money-exchange-03"} />
           <span className="text-small">Transferencia</span>
         </Button>
       </div>
@@ -248,7 +249,7 @@ export default function DashboardPage() {
           variant="ghost"
           onPress={() => router.push("/entries")}
         >
-          <Icon icon="streamline-plump:money-cash-bill-1-solid" height={24} />
+          <Icon height={24} icon="streamline-plump:money-cash-bill-1-solid" />
           <span className="text-small">Ver todas</span>
         </Button>
       </div>
